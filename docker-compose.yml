@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/n8n
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - N8N_WEBHOOK_URL=http://localhost:5678/webhook
+      - N8N_API_KEY=dev-api-key
+      - JWT_SECRET=dev-secret
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=n8n
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data: 

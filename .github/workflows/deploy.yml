@@ -1,0 +1,41 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and push NestJS image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        docker build -t $ECR_REGISTRY/nestjs-api:$GITHUB_SHA -f infrastructure/docker/nestjs/Dockerfile .
+        docker push $ECR_REGISTRY/nestjs-api:$GITHUB_SHA
+
+    - name: Build and push N8N image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        docker build -t $ECR_REGISTRY/n8n:$GITHUB_SHA -f infrastructure/docker/n8n/Dockerfile .
+        docker push $ECR_REGISTRY/n8n:$GITHUB_SHA
+
+    - name: Deploy to EKS
+      run: |
+        aws eks update-kubeconfig --name n8n-platform-cluster
+        kubectl apply -f infrastructure/kubernetes/ 

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n-workflow-api
+  labels:
+    app: n8n-workflow-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: n8n-workflow-api
+  template:
+    metadata:
+      labels:
+        app: n8n-workflow-api
+    spec:
+      containers:
+      - name: n8n-workflow-api
+        image: n8n-workflow-api:latest
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: database-url
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: redis-host
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: redis-port 

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+    spec:
+      containers:
+      - name: n8n
+        image: ${ECR_REGISTRY}/n8n:latest
+        ports:
+        - containerPort: 5678
+        env:
+        - name: N8N_PROTOCOL
+          value: "https"
+        - name: N8N_PORT
+          value: "5678"
+        - name: N8N_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: n8n-secrets
+              key: encryption-key
+        - name: DB_TYPE
+          value: "postgresdb"
+        - name: DB_POSTGRESDB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: rds-credentials
+              key: host 

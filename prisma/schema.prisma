@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  role          UserRole  @default(USER)
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // N8N related fields
+  workflows     Workflow[]
+  templates     Template[]
+  invitations   UserInvitation[] @relation("UserInvitations")
+}
+
+model Organization {
+  id        String    @id @default(uuid())
+  name      String
+  apiKey    String    @unique
+  whiteLabel Json
+  templates Template[]
+  users     User[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  invitations   UserInvitation[]
+}
+
+model Workflow {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  config      Json
+  isTemplate  Boolean  @default(false)
+  active      Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  webhooks    WebhookEvent[]
+  executions  workflowExecution[]
+}
+
+model Template {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  tags        String[]
+  config      Json
+  organization Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WebhookEvent {
+  id         String   @id @default(uuid())
+  workflowId String
+  payload    Json
+  event      String?
+  createdAt  DateTime @default(now())
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+}
+
+model workflowExecution {
+  id          String    @id @default(uuid())
+  workflowId  String
+  workflow    Workflow  @relation(fields: [workflowId], references: [id])
+  status      String    // RUNNING, COMPLETED, FAILED, CANCELLED
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+  error       String?
+  result      Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model UserInvitation {
+  id            String      @id @default(uuid())
+  email         String
+  role          UserRole
+  token         String      @unique
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  invitedBy     User        @relation("UserInvitations", fields: [invitedById], references: [id])
+  invitedById   String
+  expiresAt     DateTime
+  createdAt     DateTime    @default(now())
+}
+
+model WorkflowExecutionHistory {
+  id            String   @id @default(uuid())
+  workflowId    String
+  status        String
+  startTime     DateTime
+  endTime       DateTime?
+  executionData Json
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+
+  @@index([workflowId])
+}
+
+model WorkflowSchedule {
+  id             String   @id @default(uuid())
+  workflowId     String
+  cronExpression String
+  timezone       String
+  isActive       Boolean  @default(true)
+  lastRun        DateTime?
+  nextRun        DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([workflowId])
+}
+
+model WorkflowTemplate {
+  id           String   @id @default(uuid())
+  name         String
+  description  String
+  category     String
+  tags         String[]
+  templateData Json
+  version      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model WorkflowVersion {
+  id           String   @id @default(uuid())
+  workflowId   String
+  version      String
+  changes      String
+  workflowData Json
+  createdBy    String
+  createdAt    DateTime @default(now())
+
+  @@index([workflowId])
+} 

@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nestjs-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nestjs-api
+  template:
+    metadata:
+      labels:
+        app: nestjs-api
+    spec:
+      containers:
+      - name: nestjs-api
+        image: ${ECR_REGISTRY}/nestjs-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: rds-credentials
+              key: url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: token 
