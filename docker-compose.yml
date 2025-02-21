@@ -16,7 +16,11 @@ services:
       - N8N_API_KEY=dev-api-key
       - JWT_SECRET=dev-secret
     volumes:
-      - .:/app
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./package.json:/app/package.json
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+      - ./tsconfig.json:/app/tsconfig.json
       - /app/node_modules
     depends_on:
       - postgres

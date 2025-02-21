@@ -156,10 +156,10 @@ export class N8nService {
   }
 
   async deactivateWorkflow(_user: User, workflowId: string) {
-    
+
     try {
       // Deactivate workflow in N8N
-      await axios.post(
+     await axios.post(
         `${this.config.get<string>('N8N_API_URL')}/workflows/${workflowId}/deactivate`,
         {},
         {
@@ -643,4 +643,4 @@ export class N8nService {
       },
     );
   }
-} 
+}

@@ -45,19 +45,25 @@ export class AuthService {
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Create user
+      // Create user with default role USER
       const user = await this.prisma.user.create({
         data: {
           email,
           password: hashedPassword,
+          role: 'USER', // Set default role
           organization: {
             connect: { id: organizationId }
           }
         },
+        include: { organization: true }, // Include organization data
       });
 
-      // Generate token
-      const token = this.jwtService.sign({ userId: user.id });
+      // Generate token with role
+      const token = this.jwtService.sign({ 
+        userId: user.id,
+        role: user.role,
+        email: user.email
+      });
 
       return {
         user: this.excludePassword(user),
@@ -87,8 +93,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Generate token
-    const token = this.jwtService.sign({ userId: user.id });
+    // Generate token with userId
+    const token = this.jwtService.sign({ 
+      userId: user.id,
+      // Add these fields to ensure they're in the JWT
+      role: user.role,
+      email: user.email
+    });
 
     return {
       user: this.excludePassword(user),

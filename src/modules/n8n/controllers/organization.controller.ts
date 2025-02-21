@@ -18,7 +18,7 @@ import { CreateOrganizationDto } from '../dto/create-organization.dto';
 import { UpdateOrganizationDto } from '../dto/update-organization.dto';
 
 @Controller('organizations')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
@@ -29,6 +29,14 @@ export class OrganizationController {
     @Body() createOrganizationDto: CreateOrganizationDto,
   ) {
     return this.organizationService.create(user.id, createOrganizationDto);
+  }
+
+  @Get('current')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.USER)
+  async getCurrentOrganization(@GetUser() user: User) {
+    console.log('Controller user:', user);
+    return this.organizationService.getOrganization(user, user.organizationId);
   }
 
   @Get(':id')

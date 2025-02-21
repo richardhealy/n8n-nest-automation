@@ -9,5 +9,9 @@ export class CreateWorkflowDto {
   description?: string = '';
 
   @IsObject()
-  config: Record<string, any> = {};
+  config: Record<string, any> = {
+    nodes: [],
+    connections: [],
+    settings: {}
+  };
 } 

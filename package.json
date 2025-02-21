@@ -21,7 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",
@@ -95,5 +96,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": ["bcrypt"]
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

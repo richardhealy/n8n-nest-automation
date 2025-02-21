@@ -15,6 +15,8 @@ import { WorkflowEventsGateway } from './gateways/workflow-events.gateway';
 import { WorkflowHistoryService } from './services/workflow-history.service';
 import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
 import { AuthModule } from '../auth/auth.module';
+import { WorkflowController } from './controllers/workflow.controller';
+import { WorkflowService } from './services/workflow.service';
 
 @Module({
   imports: [
@@ -40,6 +42,7 @@ import { AuthModule } from '../auth/auth.module';
     OrganizationController,
     UserManagementController,
     WebhookController,
+    WorkflowController,
   ],
   providers: [
     N8nService,
@@ -50,6 +53,7 @@ import { AuthModule } from '../auth/auth.module';
     WorkflowEventsGateway,
     WorkflowHistoryService,
     WorkflowSchedulerService,
+    WorkflowService,
   ],
   exports: [N8nService, WorkflowHistoryService],
 })

@@ -37,5 +37,8 @@ coverage
 tmp
 temp 
 
+# Frontend
+n8n-frontend/
+
 # Don't ignore prisma directory
 !prisma
