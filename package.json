@@ -22,7 +22,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "ts-node prisma/seed.ts"
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "docker:rebuild": "docker compose down && docker-compose  --env-file .env.docker up --build -d"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",

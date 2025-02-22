@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
@@ -15,6 +15,9 @@ import { ListTemplateDto } from './dto/list-template.dto';
 import { CreateWebhookDto } from './dto/create-webhook.dto';
 import { UpdateWebhookDto } from './dto/update-webhook.dto';
 import { WorkflowEventsGateway } from './gateways/workflow-events.gateway';
+import { Prisma } from '@prisma/client';
+
+type PrismaJson = Prisma.InputJsonValue;
 
 interface WebhookPayload {
   n8nWebhookId: string;
@@ -23,15 +26,32 @@ interface WebhookPayload {
   path: string;
 }
 
+interface WorkflowConfigWithN8N extends Record<string, any> {
+  n8nWorkflowId: string;
+}
+
 @Injectable()
 export class N8nService {
   private readonly logger = new Logger(N8nService.name);
+  private readonly apiUrl: string | undefined;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly eventsGateway: WorkflowEventsGateway,
-  ) {}
+  ) {
+    // Get N8N API URL from environment variables
+    this.apiUrl = this.config.get<string>('N8N_API_URL');
+    
+    console.log('Environment variables:', {
+      N8N_API_URL: this.config.get<string>('N8N_API_URL'),
+      N8N_API_KEY: this.config.get<string>('N8N_API_KEY'),
+    });
+    
+    if (!this.apiUrl) {
+      throw new Error('N8N_API_URL environment variable is not set');
+    }
+  }
 
   async createTemplate(user: User, createTemplateDto: CreateTemplateDto): Promise<Template> {
     const template = await this.prisma.template.create({
@@ -78,17 +98,17 @@ export class N8nService {
   async createWorkflowFromTemplate(
     user: User,
     templateId: string,
-  ): Promise<WorkflowConfig> {
+  ): Promise<Workflow> {
     const template = await this.getTemplate(user, templateId);
 
-    const response = await axios.post<WorkflowConfig>(
-      `${this.config.get<string>('N8N_API_URL')}/workflows`,
+    // Create workflow in N8N
+    const n8nResponse = await axios.post<WorkflowConfig>(
+      `${this.apiUrl}/workflows`,
       {
         name: template.name,
         nodes: template.config.nodes,
         connections: template.config.connections,
         active: false,
-        organizationId: user.organizationId,
       },
       {
         headers: {
@@ -97,18 +117,62 @@ export class N8nService {
       },
     );
 
-    return response.data;
-  }
-
-  async createWorkflow(user: User, dto: CreateWorkflowDto) {
+    // Create workflow in our database with n8n ID
     return this.prisma.workflow.create({
       data: {
-        name: dto.name,
-        description: dto.description,
-        config: dto.config,
+        name: template.name,
+        description: template.description,
+        config: {
+          ...template.config,
+          n8nWorkflowId: n8nResponse.data.id,
+          templateId: template.id,
+        } as unknown as PrismaJson,
         userId: user.id,
       },
     });
+  }
+
+  async createWorkflow(user: User, dto: CreateWorkflowDto) {
+    console.log(`API URL ${this.apiUrl}/workflows`);
+
+    try {
+      // Only include the properties that N8N expects, excluding 'active'
+      const workflowData = {
+        name: dto.name,
+        nodes: dto.nodes || [],
+        connections: dto.connections || {},
+        settings: {
+          saveExecutionProgress: true,
+          saveManualExecutions: true,
+          saveDataErrorExecution: 'all',
+          saveDataSuccessExecution: 'all',
+          executionTimeout: 3600,
+          timezone: 'UTC',
+          ...dto.settings
+        }
+      };
+
+      const response = await axios.post(
+        `${this.apiUrl}/workflows`,
+        workflowData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY')
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('N8N API Error:', error.response?.data);
+        throw new HttpException(
+          error.response?.data?.message || 'Failed to create workflow in N8N',
+          error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+      throw error;
+    }
   }
 
   async duplicateTemplate(user: User, templateId: string) {
@@ -125,11 +189,18 @@ export class N8nService {
   }
 
   async activateWorkflow(_user: User, workflowId: string) {
+    const workflow = await this.prisma.workflow.findUnique({
+      where: { id: workflowId }
+    });
+
+    if (!(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
+      throw new Error('N8N workflow ID not found');
+    }
 
     try {
-      // Activate workflow in N8N
-      await axios.post(
-        `${this.config.get<string>('N8N_API_URL')}/workflows/${workflowId}/activate`,
+      // Activate workflow in N8N using the stored n8nWorkflowId
+      const response = await axios.post(
+        `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/activate`,
         {},
         {
           headers: {
@@ -137,6 +208,8 @@ export class N8nService {
           },
         },
       );
+
+      console.log('N8N response:', response.data);
 
       // Update workflow status in database
       const updatedWorkflow = await this.prisma.workflow.update({
@@ -152,15 +225,23 @@ export class N8nService {
       if (error instanceof Error) {
         throw new Error(`Failed to activate workflow: ${error.message}`);
       }
+      throw error;
     }
   }
 
   async deactivateWorkflow(_user: User, workflowId: string) {
+    const workflow = await this.prisma.workflow.findUnique({
+      where: { id: workflowId }
+    });
+
+    if (!(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
+      throw new Error('N8N workflow ID not found');
+    }
 
     try {
-      // Deactivate workflow in N8N
-     await axios.post(
-        `${this.config.get<string>('N8N_API_URL')}/workflows/${workflowId}/deactivate`,
+      // Deactivate workflow in N8N using the stored n8nWorkflowId
+      await axios.post(
+        `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/deactivate`,
         {},
         {
           headers: {
@@ -183,6 +264,7 @@ export class N8nService {
       if (error instanceof Error) {
         throw new Error(`Failed to deactivate workflow: ${error.message}`);
       }
+      throw error;
     }
   }
 
@@ -203,7 +285,11 @@ export class N8nService {
   }
 
   async startExecution(user: User, workflowId: string) {
-    await this.validateWorkflowAccess(user, workflowId);
+    const workflow = await this.validateWorkflowAccess(user, workflowId);
+
+    if (!(workflow.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
+      throw new Error('N8N workflow ID not found');
+    }
 
     const execution = await this.prisma.workflowExecution.create({
       data: {
@@ -213,9 +299,9 @@ export class N8nService {
     });
 
     try {
-      // Start workflow in N8N
+      // Start workflow in N8N using the stored n8nWorkflowId
       await axios.post(
-        `${this.config.get<string>('N8N_API_URL')}/workflows/${workflowId}/execute`,
+        `${this.apiUrl}/workflows/${(workflow.config as WorkflowConfigWithN8N).n8nWorkflowId}/execute`,
         {},
         {
           headers: {
@@ -354,7 +440,7 @@ export class N8nService {
     if (workflow?.active) {
       try {
         await axios.post(
-          `${this.config.get<string>('N8N_API_URL')}/workflows/${id}/deactivate`,
+          `${this.apiUrl}/workflows/${id}/deactivate`,
           {},
           {
             headers: {
@@ -491,7 +577,7 @@ export class N8nService {
 
     // Create webhook in N8N
     const n8nWebhook = await axios.post(
-      `${this.config.get<string>('N8N_API_URL')}/workflows/${createWebhookDto.workflowId}/webhooks`,
+      `${this.apiUrl}/workflows/${createWebhookDto.workflowId}/webhooks`,
       {
         name: createWebhookDto.name,
         method: createWebhookDto.method,
@@ -547,7 +633,7 @@ export class N8nService {
 
     // Update webhook in N8N
     await axios.patch(
-      `${this.config.get<string>('N8N_API_URL')}/webhooks/${payload.n8nWebhookId}`,
+      `${this.apiUrl}/webhooks/${payload.n8nWebhookId}`,
       updateDto,
       {
         headers: {
@@ -591,7 +677,7 @@ export class N8nService {
 
     // Delete webhook from N8N
     await axios.delete(
-      `${this.config.get<string>('N8N_API_URL')}/webhooks/${payload.n8nWebhookId}`,
+      `${this.apiUrl}/webhooks/${payload.n8nWebhookId}`,
       {
         headers: {
           'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
@@ -630,9 +716,13 @@ export class N8nService {
       throw new NotFoundException('Workflow not found');
     }
 
-    // Execute workflow in N8N with data
+    if (!(workflow.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
+      throw new Error('N8N workflow ID not found');
+    }
+
+    // Execute workflow in N8N with data using the stored n8nWorkflowId
     await axios.post(
-      `${this.config.get<string>('N8N_API_URL')}/workflows/${workflowId}/execute`,
+      `${this.apiUrl}/workflows/${(workflow.config as WorkflowConfigWithN8N).n8nWorkflowId}/execute`,
       {
         data,
       },

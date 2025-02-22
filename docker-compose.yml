@@ -9,12 +9,15 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/n8n
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - N8N_WEBHOOK_URL=http://localhost:5678/webhook
-      - N8N_API_KEY=dev-api-key
-      - JWT_SECRET=dev-secret
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_API_URL=${N8N_API_URL}
+      - N8N_API_KEY=${N8N_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+
     volumes:
       - ./src:/app/src
       - ./prisma:/app/prisma
@@ -22,6 +25,7 @@ services:
       - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
       - ./tsconfig.json:/app/tsconfig.json
       - /app/node_modules
+
     depends_on:
       - postgres
       - redis
@@ -46,4 +50,4 @@ services:
 
 volumes:
   postgres_data:
-  redis_data: 
+  redis_data:

@@ -16,6 +16,7 @@ import { AuthModule } from './modules/auth/auth.module';
       isGlobal: true,
       load: [configuration],
       validationSchema,
+      envFilePath: '.env',
     }),
     AuthModule,
     PrismaModule,
