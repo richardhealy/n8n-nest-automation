@@ -1,13 +1,13 @@
 import { IsString, IsObject, IsOptional } from 'class-validator';
 
 export class WebhookDto {
-  @IsString()
-  workflowId: string = '';
+	@IsString()
+	workflowId = '';
 
-  @IsObject()
-  payload: Record<string, any> = {};
+	@IsObject()
+	payload: Record<string, any> = {};
 
-  @IsString()
-  @IsOptional()
-  event?: string = '';
-} 
+	@IsString()
+	@IsOptional()
+	event?: string = '';
+}

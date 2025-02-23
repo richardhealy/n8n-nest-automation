@@ -11,20 +11,20 @@ import { validationSchema } from './config/validation.schema';
 import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration],
-      validationSchema,
-      envFilePath: '.env',
-    }),
-    AuthModule,
-    PrismaModule,
-    N8nModule,
-    WebhookModule,
-    HealthModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+			load: [configuration],
+			validationSchema,
+			ignoreEnvFile: true,
+		}),
+		AuthModule,
+		PrismaModule,
+		N8nModule,
+		WebhookModule,
+		HealthModule,
+	],
+	controllers: [AppController],
+	providers: [AppService],
 })
 export class AppModule {}

@@ -8,19 +8,10 @@ services:
       target: development
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
-      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
-      - N8N_API_URL=${N8N_API_URL}
-      - N8N_API_KEY=${N8N_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+    env_file:
+      - .env.docker
     volumes:
       - ./packages/api:/app/packages/api
-      - ./packages/api/.env:/app/packages/api/.env
       - /app/packages/api/node_modules
     depends_on:
       - postgres

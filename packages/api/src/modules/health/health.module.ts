@@ -5,11 +5,7 @@ import { HealthController } from './health.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [
-    TerminusModule,
-    HttpModule,
-    PrismaModule
-  ],
-  controllers: [HealthController],
+	imports: [TerminusModule, HttpModule, PrismaModule],
+	controllers: [HealthController],
 })
-export class HealthModule {} 
+export class HealthModule {}

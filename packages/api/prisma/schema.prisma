@@ -53,6 +53,7 @@ model Workflow {
   updatedAt   DateTime @updatedAt
   webhooks    WebhookEvent[]
   executions  workflowExecution[]
+  schedules   WorkflowSchedule[]
 }
 
 model Template {
@@ -123,6 +124,10 @@ model WorkflowSchedule {
   workflow    Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   cron        String
   enabled     Boolean  @default(true)
+  isActive    Boolean  @default(true)
+  lastRun     DateTime?
+  nextRun     DateTime?
+  timezone    String   @default("UTC")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

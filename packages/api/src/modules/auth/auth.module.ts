@@ -10,22 +10,22 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { WsJwtGuard } from './guards/ws-jwt.guard';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '1d'),
-        },
-      }),
-      inject: [ConfigService],
-    }),
-    PrismaModule,
-  ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, RolesGuard, WsJwtGuard],
-  exports: [JwtModule, WsJwtGuard],
+	imports: [
+		PassportModule.register({ defaultStrategy: 'jwt' }),
+		JwtModule.registerAsync({
+			imports: [ConfigModule],
+			useFactory: async (configService: ConfigService) => ({
+				secret: configService.get<string>('JWT_SECRET'),
+				signOptions: {
+					expiresIn: configService.get<string>('JWT_EXPIRES_IN', '1d'),
+				},
+			}),
+			inject: [ConfigService],
+		}),
+		PrismaModule,
+	],
+	controllers: [AuthController],
+	providers: [AuthService, JwtStrategy, RolesGuard, WsJwtGuard],
+	exports: [JwtModule, WsJwtGuard],
 })
-export class AuthModule {} 
+export class AuthModule {}

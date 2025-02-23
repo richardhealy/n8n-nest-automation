@@ -1,15 +1,15 @@
 import { IsString, IsObject, IsNotEmpty } from 'class-validator';
 
 export class WebhookPayloadDto {
-  @IsString()
-  @IsNotEmpty()
-  workflowId: string = '';
+	@IsString()
+	@IsNotEmpty()
+	workflowId = '';
 
-  @IsString()
-  @IsNotEmpty()
-  organizationId: string = '';
+	@IsString()
+	@IsNotEmpty()
+	organizationId = '';
 
-  @IsObject()
-  @IsNotEmpty()
-  data: Record<string, any> = {};
-} 
+	@IsObject()
+	@IsNotEmpty()
+	data: Record<string, any> = {};
+}

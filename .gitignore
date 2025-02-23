@@ -1,16 +1,60 @@
-# compiled output
-/dist
-/node_modules
-/build
+# Version control
+.git
+.gitignore
+
+# Dependencies
+node_modules
+**/node_modules
+packages/api/node_modules
+packages/frontend/node_modules
+.pnpm-store/
+
+# Build outputs
+dist
+**/dist
+packages/api/dist
+packages/frontend/dist
+build
+**/build
+packages/api/build
+packages/frontend/build
+
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# IDE files
+.vscode
+.idea
+*.code-workspace
 
 # Logs
 logs
 *.log
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage
+.nyc_output
+
+# Temporary files
+.DS_Store
+*.pem
+.cache
+tmp
+temp
+
+# Prisma
+packages/api/prisma/migrations/
+packages/api/prisma/.env
+
+# TypeScript
+*.tsbuildinfo
 
 # OS
 .DS_Store
@@ -55,3 +99,4 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+

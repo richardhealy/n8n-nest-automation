@@ -5,9 +5,9 @@ import { N8nModule } from '../n8n/n8n.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [N8nModule, ConfigModule],
-  controllers: [WebhookController],
-  providers: [WebhookService],
-  exports: [WebhookService],
+	imports: [N8nModule, ConfigModule],
+	controllers: [WebhookController],
+	providers: [WebhookService],
+	exports: [WebhookService],
 })
-export class WebhookModule {} 
+export class WebhookModule {}

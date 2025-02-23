@@ -1,1 +1,0 @@
-{"version":3,"file":"invite-user.dto.js","sourceRoot":"","sources":["../../../../../src/modules/n8n/dto/invite-user.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,qDAAkD;AAClD,oEAA2D;AAE3D,MAAa,aAAa;IAA1B;QAEE,UAAK,GAAW,EAAE,CAAC;QAGnB,SAAI,GAAa,yBAAQ,CAAC,IAAI,CAAC;IACjC,CAAC;CAAA;AAND,sCAMC;AAJC;IADC,IAAA,yBAAO,GAAE;;4CACS;AAGnB;IADC,IAAA,wBAAM,EAAC,yBAAQ,CAAC;;2CACc"}

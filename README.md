@@ -1,9 +1,8 @@
-Database
-- Add workflow execution history
-- Create workflow scheduling table
-- Add template categories/tags
-- Implement workflow version control
 
+```
+docker compose --env-file .env.docker build --no-cache && docker compose --env-file .env.docker up -d
+```
+TODO
 Infrastructure
 - Complete Kubernetes configurations
   - Add resource limits

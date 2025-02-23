@@ -1,11 +1,11 @@
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
+	ADMIN = 'ADMIN',
+	USER = 'USER',
 }
 
 export interface JwtPayload {
-  sub: string;
-  email: string;
-  role: UserRole;
-  organizationId: string;
-} 
+	sub: string;
+	email: string;
+	role: UserRole;
+	organizationId: string;
+}

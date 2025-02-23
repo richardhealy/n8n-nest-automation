@@ -1,16 +1,17 @@
 {
-  "name": "n8n-project",
-  "private": true,
-  "scripts": {
-    "dev": "pnpm -r --parallel dev",
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
-    "format": "biome format --write .",
-    "lint": "biome lint --apply .",
-    "check": "pnpm -r check"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.5.3",
-    "typescript": "^5.0.0"
-  }
+	"name": "n8n-project",
+	"private": true,
+	"scripts": {
+		"dev": "pnpm -r --parallel dev",
+		"build": "pnpm -r build",
+		"test": "pnpm -r test",
+		"format": "pnpm dlx @biomejs/biome format --write .",
+		"lint": "pnpm dlx @biomejs/biome lint --write packages/api/src packages/frontend/src",
+		"check": "pnpm -r check",
+		"typecheck": "pnpm -r typecheck"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.5.3",
+		"typescript": "^5.3.3"
+	}
 }

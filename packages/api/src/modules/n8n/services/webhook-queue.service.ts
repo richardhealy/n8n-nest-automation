@@ -1,177 +1,182 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Queue, Job } from 'bull';
-import { N8nService } from '../n8n.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import type { Queue, Job } from 'bull';
+import type { N8nService } from '../n8n.service';
+import type { PrismaService } from '../../prisma/prisma.service';
 import { WorkflowExecutionStatus } from '../types/workflow-execution.enum';
-import { WorkflowEventsGateway } from '../gateways/workflow-events.gateway';
+import type { WorkflowEventsGateway } from '../gateways/workflow-events.gateway';
 
 interface WebhookPayload {
-  workflowId: string;
-  event: string;
-  data: Record<string, any>;
+	workflowId: string;
+	event: string;
+	data: Record<string, any>;
 }
 
 @Injectable()
 @Processor('webhook-events')
 export class WebhookQueueService {
-  private readonly logger = new Logger(WebhookQueueService.name);
+	private readonly logger = new Logger(WebhookQueueService.name);
 
-  constructor(
-    @InjectQueue('webhook-events') private webhookQueue: Queue,
-    private readonly n8nService: N8nService,
-    private readonly prisma: PrismaService,
-    private readonly eventsGateway: WorkflowEventsGateway,
-  ) {}
+	constructor(
+		@InjectQueue('webhook-events') private webhookQueue: Queue,
+		private readonly n8nService: N8nService,
+		private readonly prisma: PrismaService,
+		private readonly eventsGateway: WorkflowEventsGateway,
+	) {}
 
-  async addToQueue(payload: WebhookPayload) {
-    return this.webhookQueue.add('process-webhook', payload, {
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 2000, // 2 seconds
-      },
-      removeOnComplete: true,
-      removeOnFail: false,
-    });
-  }
+	async addToQueue(payload: WebhookPayload) {
+		return this.webhookQueue.add('process-webhook', payload, {
+			attempts: 3,
+			backoff: {
+				type: 'exponential',
+				delay: 2000, // 2 seconds
+			},
+			removeOnComplete: true,
+			removeOnFail: false,
+		});
+	}
 
-  @Process('process-webhook')
-  async processWebhook(job: Job<WebhookPayload>) {
-    this.logger.debug(`Processing webhook event ${job.id}`);
-    const { workflowId, event, data } = job.data;
-    const startTime = Date.now();
+	@Process('process-webhook')
+	async processWebhook(job: Job<WebhookPayload>) {
+		this.logger.debug(`Processing webhook event ${job.id}`);
+		const { workflowId, event, data } = job.data;
+		const startTime = Date.now();
 
-    try {
-      // Notify queue position
-      const queuePosition = await this.webhookQueue.getJobCountByTypes('waiting');
-      this.eventsGateway.notifyQueueUpdate(queuePosition, queuePosition + 1, workflowId);
+		try {
+			// Notify queue position
+			const queuePosition =
+				await this.webhookQueue.getJobCountByTypes('waiting');
+			this.eventsGateway.notifyQueueUpdate(
+				queuePosition,
+				queuePosition + 1,
+				workflowId,
+			);
 
-      // Create execution record
-      const execution = await this.prisma.workflowExecution.create({
-        data: {
-          workflowId,
-          status: WorkflowExecutionStatus.RUNNING,
-        },
-        include: {
-          workflow: true,
-        },
-      });
+			// Create execution record
+			const execution = await this.prisma.workflowExecution.create({
+				data: {
+					workflowId,
+					status: WorkflowExecutionStatus.RUNNING,
+				},
+				include: {
+					workflow: true,
+				},
+			});
 
-      // Notify start progress
-      this.eventsGateway.notifyProgress(workflowId, {
-        step: 'STARTED',
-        percentage: 0,
-        message: 'Starting workflow execution',
-        timestamp: new Date(),
-      });
+			// Notify start progress
+			this.eventsGateway.notifyProgress(workflowId, {
+				step: 'STARTED',
+				percentage: 0,
+				message: 'Starting workflow execution',
+				timestamp: new Date(),
+			});
 
-      // Store webhook event
-      await this.prisma.webhookEvent.create({
-        data: {
-          workflowId,
-          event,
-          payload: data,
-        },
-      });
+			// Store webhook event
+			await this.prisma.webhookEvent.create({
+				data: {
+					workflowId,
+					event,
+					payload: data,
+				},
+			});
 
-      // Notify progress
-      this.eventsGateway.notifyProgress(workflowId, {
-        step: 'PROCESSING',
-        percentage: 50,
-        message: 'Processing webhook data',
-        timestamp: new Date(),
-      });
+			// Notify progress
+			this.eventsGateway.notifyProgress(workflowId, {
+				step: 'PROCESSING',
+				percentage: 50,
+				message: 'Processing webhook data',
+				timestamp: new Date(),
+			});
 
-      // Execute workflow
-      await this.n8nService.executeWorkflow(workflowId, data);
+			// Execute workflow
+			await this.n8nService.executeWorkflow(workflowId, data);
 
-      // Calculate metrics
-      const executionTime = Date.now() - startTime;
-      const memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; // MB
+			// Calculate metrics
+			const executionTime = Date.now() - startTime;
+			const memoryUsage = process.memoryUsage().heapUsed / 1024 / 1024; // MB
 
-      // Update execution status
-      await this.prisma.workflowExecution.update({
-        where: { id: execution.id },
-        data: {
-          status: WorkflowExecutionStatus.COMPLETED,
-          finishedAt: new Date(),
-        },
-      });
+			// Update execution status
+			await this.prisma.workflowExecution.update({
+				where: { id: execution.id },
+				data: {
+					status: WorkflowExecutionStatus.COMPLETED,
+					finishedAt: new Date(),
+				},
+			});
 
-      // Notify completion progress
-      this.eventsGateway.notifyProgress(workflowId, {
-        step: 'COMPLETED',
-        percentage: 100,
-        message: 'Workflow execution completed',
-        timestamp: new Date(),
-      });
+			// Notify completion progress
+			this.eventsGateway.notifyProgress(workflowId, {
+				step: 'COMPLETED',
+				percentage: 100,
+				message: 'Workflow execution completed',
+				timestamp: new Date(),
+			});
 
-      // Notify metrics
-      this.eventsGateway.notifyWorkflowMetrics(workflowId, {
-        executionTime,
-        memoryUsage,
-        successRate: 100,
-        lastExecuted: new Date(),
-      });
+			// Notify metrics
+			this.eventsGateway.notifyWorkflowMetrics(workflowId, {
+				executionTime,
+				memoryUsage,
+				successRate: 100,
+				lastExecuted: new Date(),
+			});
 
-      return { success: true };
-    } catch (error) {
-      if (error instanceof Error) {
-        this.logger.error(`Failed to process webhook: ${error.message}`);
-      } else {
-        this.logger.error("Failed to process webhook: Unknown error");
-      }
+			return { success: true };
+		} catch (error) {
+			if (error instanceof Error) {
+				this.logger.error(`Failed to process webhook: ${error.message}`);
+			} else {
+				this.logger.error('Failed to process webhook: Unknown error');
+			}
 
-      // Create execution record for error tracking
-      const execution = await this.prisma.workflowExecution.create({
-        data: {
-          workflowId,
-          status: WorkflowExecutionStatus.FAILED,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
-      });
+			// Create execution record for error tracking
+			const execution = await this.prisma.workflowExecution.create({
+				data: {
+					workflowId,
+					status: WorkflowExecutionStatus.FAILED,
+					error: error instanceof Error ? error.message : 'Unknown error',
+				},
+			});
 
-      // Notify error
-      this.handleExecutionError(error, execution);
+			// Notify error
+			this.handleExecutionError(error, execution);
 
-      // Notify failure progress
-      this.eventsGateway.notifyProgress(workflowId, {
-        step: 'FAILED',
-        percentage: 100,
-        message: `Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        timestamp: new Date(),
-      });
+			// Notify failure progress
+			this.eventsGateway.notifyProgress(workflowId, {
+				step: 'FAILED',
+				percentage: 100,
+				message: `Execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				timestamp: new Date(),
+			});
 
-      throw error;
-    }
-  }
+			throw error;
+		}
+	}
 
-  async getQueueStatus() {
-    const [waiting, active, completed, failed] = await Promise.all([
-      this.webhookQueue.getWaitingCount(),
-      this.webhookQueue.getActiveCount(),
-      this.webhookQueue.getCompletedCount(),
-      this.webhookQueue.getFailedCount(),
-    ]);
+	async getQueueStatus() {
+		const [waiting, active, completed, failed] = await Promise.all([
+			this.webhookQueue.getWaitingCount(),
+			this.webhookQueue.getActiveCount(),
+			this.webhookQueue.getCompletedCount(),
+			this.webhookQueue.getFailedCount(),
+		]);
 
-    return {
-      waiting,
-      active,
-      completed,
-      failed,
-    };
-  }
+		return {
+			waiting,
+			active,
+			completed,
+			failed,
+		};
+	}
 
-  private handleExecutionError(error: any, workflowExecution: any) {
-    try {
-      this.eventsGateway.notifyError(workflowExecution.workflow.userId, {
-        message: error.message,
-        workflowId: workflowExecution.workflowId,
-        severity: 'error'
-      });
-    } catch (err) {
-      console.error('Failed to notify error:', err);
-    }
-  }
-} 
+	private handleExecutionError(error: any, workflowExecution: any) {
+		try {
+			this.eventsGateway.notifyError(workflowExecution.workflow.userId, {
+				message: error.message,
+				workflowId: workflowExecution.workflowId,
+				severity: 'error',
+			});
+		} catch (err) {
+			console.error('Failed to notify error:', err);
+		}
+	}
+}

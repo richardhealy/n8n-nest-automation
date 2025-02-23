@@ -1,27 +1,33 @@
-import { IsString, IsArray, IsObject, IsOptional, IsNotEmpty } from 'class-validator';
-import { WorkflowConfig } from '../types/workflow.types';
+import {
+	IsString,
+	IsArray,
+	IsObject,
+	IsOptional,
+	IsNotEmpty,
+} from 'class-validator';
+import type { WorkflowConfig } from '../types/workflow.types';
 
 export class CreateTemplateDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string = '';
+	@IsString()
+	@IsNotEmpty()
+	name = '';
 
-  @IsString()
-  @IsNotEmpty()
-  description: string = '';
+	@IsString()
+	@IsNotEmpty()
+	description = '';
 
-  @IsArray()
-  @IsString({ each: true })
-  tags: string[] = [];
+	@IsArray()
+	@IsString({ each: true })
+	tags: string[] = [];
 
-  @IsObject()
-  @IsNotEmpty()
-  config: WorkflowConfig = {
-    nodes: [],
-    connections: {},
-  };
+	@IsObject()
+	@IsNotEmpty()
+	config: WorkflowConfig = {
+		nodes: [],
+		connections: {},
+	};
 
-  @IsString()
-  @IsNotEmpty()
-  organizationId: string = '';
-} 
+	@IsString()
+	@IsNotEmpty()
+	organizationId = '';
+}
