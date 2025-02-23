@@ -32,7 +32,7 @@ interface WebhookPayload {
 	path: string;
 }
 
-interface WorkflowConfigWithN8N extends Record<string, any> {
+interface WorkflowConfigWithN8N extends Record<string, unknown> {
 	n8nWorkflowId: string;
 }
 
@@ -68,7 +68,7 @@ export class N8nService {
 				name: createTemplateDto.name,
 				description: createTemplateDto.description,
 				tags: createTemplateDto.tags,
-				config: createTemplateDto.config as Record<string, any>,
+				config: createTemplateDto.config,
 				user: { connect: { id: user.id } },
 				organization: { connect: { id: user.organizationId } },
 			},
@@ -398,7 +398,7 @@ export class N8nService {
 	}
 
 	async listWorkflows(user: User, filters: ListWorkflowDto) {
-		const where: any = {
+		const where: Prisma.WorkflowWhereInput = {
 			userId: user.id,
 		};
 
@@ -483,7 +483,7 @@ export class N8nService {
 	}
 
 	async listTemplates(user: User, filters: ListTemplateDto) {
-		const where: any = {
+		const where: Prisma.TemplateWhereInput = {
 			organizationId: user.organizationId,
 		};
 
@@ -525,7 +525,7 @@ export class N8nService {
 			where: { id: templateId },
 			data: {
 				...updateDto,
-				config: updateDto.config as Record<string, any>,
+				config: updateDto.config,
 			},
 			include: {
 				user: {
@@ -723,7 +723,7 @@ export class N8nService {
 		});
 	}
 
-	async executeWorkflow(workflowId: string, data: Record<string, any>) {
+	async executeWorkflow(workflowId: string, data: Record<string, unknown>) {
 		const workflow = await this.prisma.workflow.findUnique({
 			where: { id: workflowId },
 		});
