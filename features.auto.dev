@@ -4,7 +4,7 @@ features:
     priority: "high"
     complexity: 3
     files:
-      - "src/modules/n8n/n8n.service.ts"
+      - "packages/api/src/modules/n8n/n8n.service.ts"
     requirements: |
       - Check if the workflow is activated in n8n
       - Check if the workflow is activated in the database

@@ -4,12 +4,13 @@ services:
   api:
     build:
       context: .
+      dockerfile: packages/api/Dockerfile
       target: development
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=${DOCKER_DATABASE_URL}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
@@ -17,18 +18,26 @@ services:
       - N8N_API_KEY=${N8N_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
-
     volumes:
-      - ./src:/app/src
-      - ./prisma:/app/prisma
-      - ./package.json:/app/package.json
-      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
-      - ./tsconfig.json:/app/tsconfig.json
-      - /app/node_modules
-
+      - ./packages/api:/app/packages/api
+      - ./packages/api/.env:/app/packages/api/.env
+      - /app/packages/api/node_modules
     depends_on:
       - postgres
       - redis
+
+  frontend:
+    build:
+      context: .
+      dockerfile: packages/frontend/Dockerfile
+      target: development
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./packages/frontend:/app/packages/frontend
+      - /app/packages/frontend/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3000
 
   postgres:
     image: postgres:14-alpine

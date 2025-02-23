@@ -9,6 +9,8 @@ dist
 # Environment files
 .env
 .env.*
+../.env
+../.env.*
 
 # Development files
 README.md
@@ -38,7 +40,6 @@ tmp
 temp 
 
 # Frontend
-n8n-frontend/
 
 # Don't ignore prisma directory
 !prisma
