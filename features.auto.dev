@@ -1,10 +1,10 @@
 features:
-  - title: "Update activateWorkflow to work properly"
-    description: "It seems to be broken. Its active in the database but not on n8n after the process is compelte."
+  - title: "Update deactivateWorkflow to work properly"
+    description: "It seems to be broken. Its active in the database but not on n8n after the process is completed."
     priority: "high"
     complexity: 3
     files:
       - "packages/api/src/modules/n8n/n8n.service.ts"
     requirements: |
-      - Check if the workflow is activated in n8n
-      - Check if the workflow is activated in the database
+      - Check if the workflow is deactivated in n8n
+      - Check if the workflow is deactivated in the database

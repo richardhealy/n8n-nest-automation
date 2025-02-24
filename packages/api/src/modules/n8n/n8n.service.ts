@@ -198,46 +198,44 @@ export class N8nService {
   }
 
   async activateWorkflow(_user: User, workflowId: string) {
-    {
-      const workflow = await this.prisma.workflow.findUnique({
-        where: { id: workflowId },
-      });
+	const workflow = await this.prisma.workflow.findUnique({
+	where: { id: workflowId },
+	});
 
-      if (!(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
-        throw new Error('N8N workflow ID not found');
-      }
+	if (!(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
+	throw new Error('N8N workflow ID not found');
+	}
 
-      try {
-        // Activate workflow in N8N using the stored n8nWorkflowId
-        const response = await axios.post(
-          `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/activate`,
-          {},
-          {
-            headers: {
-              'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-            },
-          },
-        );
+	try {
+	// Activate workflow in N8N using the stored n8nWorkflowId
+	const response = await axios.post(
+		`${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/activate`,
+		{},
+		{
+		headers: {
+			'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
+		},
+		},
+	);
 
-        console.log('N8N response:', response.data);
+	console.log('N8N response:', response.data);
 
-        // Update workflow status in database
-        const updatedWorkflow = await this.prisma.workflow.update({
-          where: { id: workflowId },
-          data: { active: true },
-        });
+	// Update workflow status in database
+	const updatedWorkflow = await this.prisma.workflow.update({
+		where: { id: workflowId },
+		data: { active: true },
+	});
 
-        // Notify subscribers about workflow status update
-        this.eventsGateway.notifyWorkflowStatus(workflowId, true);
+	// Notify subscribers about workflow status update
+	this.eventsGateway.notifyWorkflowStatus(workflowId, true);
 
-        return updatedWorkflow;
-      } catch (error) {
-        if (error instanceof Error) {
-          throw new Error(`Failed to activate workflow: ${error.message}`);
-        }
-        throw error;
-      }
-    }
+	return updatedWorkflow;
+	} catch (error) {
+	if (error instanceof Error) {
+		throw new Error(`Failed to activate workflow: ${error.message}`);
+	}
+	throw error;
+	}
   }
 
   async deactivateWorkflow(_user: User, workflowId: string) {
