@@ -15,7 +15,9 @@
 		},
 		"formatter": {
 			"quoteStyle": "single",
-			"semicolons": "always"
+			"semicolons": "always",
+			"indentStyle": "space",
+			"indentWidth": 2
 		}
 	},
 	"linter": {

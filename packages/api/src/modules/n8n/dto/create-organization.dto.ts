@@ -1,15 +1,15 @@
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateOrganizationDto {
-	@IsString()
-	name = '';
+  @IsString()
+  name = '';
 
-	@IsObject()
-	@IsOptional()
-	whiteLabel?: {
-		logo?: string;
-		primaryColor?: string;
-		secondaryColor?: string;
-		domain?: string;
-	};
+  @IsObject()
+  @IsOptional()
+  whiteLabel?: {
+    logo?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    domain?: string;
+  };
 }

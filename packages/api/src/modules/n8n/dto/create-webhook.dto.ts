@@ -1,31 +1,31 @@
 import { IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 
 export enum WebhookMethod {
-	GET = 'GET',
-	POST = 'POST',
-	PUT = 'PUT',
-	PATCH = 'PATCH',
-	DELETE = 'DELETE',
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
 }
 
 export class CreateWebhookDto {
-	@IsString()
-	name = '';
+  @IsString()
+  name = '';
 
-	@IsString()
-	@IsOptional()
-	description?: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
 
-	@IsEnum(WebhookMethod)
-	method: WebhookMethod = WebhookMethod.GET;
+  @IsEnum(WebhookMethod)
+  method: WebhookMethod = WebhookMethod.GET;
 
-	@IsString()
-	path = '';
+  @IsString()
+  path = '';
 
-	@IsObject()
-	@IsOptional()
-	headers?: Record<string, string> = {};
+  @IsObject()
+  @IsOptional()
+  headers?: Record<string, string> = {};
 
-	@IsString()
-	workflowId = '';
+  @IsString()
+  workflowId = '';
 }
