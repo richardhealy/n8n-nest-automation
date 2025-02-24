@@ -1,27 +1,27 @@
 import {
+	HttpException,
+	HttpStatus,
 	Injectable,
 	NotFoundException,
 	UnauthorizedException,
-	HttpException,
-	HttpStatus,
 } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
+import type { User, Workflow } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import axios from 'axios';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { CreateTemplateDto } from './dto/create-template.dto';
-import type { Template, WorkflowConfig } from './types/workflow.types';
-import axios from 'axios';
-import type { CreateWorkflowDto } from './dto/create-workflow.dto';
-import type { User, Workflow } from '@prisma/client';
-import { WorkflowExecutionStatus } from './types/workflow-execution.enum';
-import type { UpdateWorkflowExecutionDto } from './dto/workflow-execution.dto';
-import type { ListWorkflowDto } from './dto/list-workflow.dto';
-import type { UpdateWorkflowDto } from './dto/update-workflow.dto';
-import { Logger } from '@nestjs/common';
-import type { ListTemplateDto } from './dto/list-template.dto';
 import type { CreateWebhookDto } from './dto/create-webhook.dto';
+import type { CreateWorkflowDto } from './dto/create-workflow.dto';
+import type { ListTemplateDto } from './dto/list-template.dto';
+import type { ListWorkflowDto } from './dto/list-workflow.dto';
 import type { UpdateWebhookDto } from './dto/update-webhook.dto';
+import type { UpdateWorkflowDto } from './dto/update-workflow.dto';
+import type { UpdateWorkflowExecutionDto } from './dto/workflow-execution.dto';
 import type { WorkflowEventsGateway } from './gateways/workflow-events.gateway';
-import type { Prisma } from '@prisma/client';
+import { WorkflowExecutionStatus } from './types/workflow-execution.enum';
+import type { Template, WorkflowConfig } from './types/workflow.types';
 
 type PrismaJson = Prisma.InputJsonValue;
 
@@ -68,7 +68,7 @@ export class N8nService {
 				name: createTemplateDto.name,
 				description: createTemplateDto.description,
 				tags: createTemplateDto.tags,
-				config: createTemplateDto.config,
+				config: createTemplateDto.config as unknown as Prisma.InputJsonValue,
 				user: { connect: { id: user.id } },
 				organization: { connect: { id: user.organizationId } },
 			},
@@ -191,7 +191,7 @@ export class N8nService {
 			data: {
 				name: `Copy of ${template.name}`,
 				description: template.description,
-				config: template.config,
+				config: template.config as unknown as Prisma.InputJsonValue,
 				userId: user.id,
 			},
 		});
@@ -442,7 +442,10 @@ export class N8nService {
 
 		return this.prisma.workflow.update({
 			where: { id },
-			data: updateDto,
+			data: {
+				...updateDto,
+				config: updateDto.config as unknown as Prisma.InputJsonValue,
+			},
 		});
 	}
 
@@ -525,7 +528,7 @@ export class N8nService {
 			where: { id: templateId },
 			data: {
 				...updateDto,
-				config: updateDto.config,
+				config: updateDto.config as unknown as Prisma.InputJsonValue,
 			},
 			include: {
 				user: {

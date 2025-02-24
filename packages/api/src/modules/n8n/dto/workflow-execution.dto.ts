@@ -1,4 +1,5 @@
-import { IsString, IsOptional, IsObject } from 'class-validator';
+import type { Prisma } from '@prisma/client';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 import { WorkflowExecutionStatus } from '../types/workflow-execution.enum';
 
 export class UpdateWorkflowExecutionDto {
@@ -11,5 +12,5 @@ export class UpdateWorkflowExecutionDto {
 
 	@IsObject()
 	@IsOptional()
-	result?: Record<string, any>;
+	result?: Prisma.InputJsonValue;
 }

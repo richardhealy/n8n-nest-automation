@@ -1,16 +1,25 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import type { Queue, Job } from 'bull';
-import type { N8nService } from '../n8n.service';
+import { Injectable, Logger } from '@nestjs/common';
+import type {
+	Workflow,
+	workflowExecution as WorkflowExecution,
+} from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import type { Job, Queue } from 'bull';
 import type { PrismaService } from '../../prisma/prisma.service';
-import { WorkflowExecutionStatus } from '../types/workflow-execution.enum';
 import type { WorkflowEventsGateway } from '../gateways/workflow-events.gateway';
+import type { N8nService } from '../n8n.service';
+import { WorkflowExecutionStatus } from '../types/workflow-execution.enum';
 
 interface WebhookPayload {
 	workflowId: string;
 	event: string;
-	data: Record<string, any>;
+	data: Record<string, unknown>;
 }
+
+type WorkflowExecutionWithWorkflow = WorkflowExecution & {
+	workflow: Workflow;
+};
 
 @Injectable()
 @Processor('webhook-events')
@@ -76,7 +85,7 @@ export class WebhookQueueService {
 				data: {
 					workflowId,
 					event,
-					payload: data,
+					payload: data as unknown as Prisma.InputJsonValue,
 				},
 			});
 
@@ -135,10 +144,15 @@ export class WebhookQueueService {
 					status: WorkflowExecutionStatus.FAILED,
 					error: error instanceof Error ? error.message : 'Unknown error',
 				},
+				include: {
+					workflow: true,
+				},
 			});
 
 			// Notify error
-			this.handleExecutionError(error, execution);
+			if (error instanceof Error) {
+				this.handleExecutionError(error, execution);
+			}
 
 			// Notify failure progress
 			this.eventsGateway.notifyProgress(workflowId, {
@@ -168,7 +182,10 @@ export class WebhookQueueService {
 		};
 	}
 
-	private handleExecutionError(error: any, workflowExecution: any) {
+	private handleExecutionError(
+		error: Error,
+		workflowExecution: WorkflowExecutionWithWorkflow,
+	) {
 		try {
 			this.eventsGateway.notifyError(workflowExecution.workflow.userId, {
 				message: error.message,

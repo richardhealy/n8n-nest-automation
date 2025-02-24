@@ -1,13 +1,13 @@
+import { randomBytes } from 'node:crypto';
 import {
 	Injectable,
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
+import { Prisma, type User } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { CreateOrganizationDto } from '../dto/create-organization.dto';
 import type { UpdateOrganizationDto } from '../dto/update-organization.dto';
-import { type User, Prisma } from '@prisma/client';
-import { randomBytes } from 'node:crypto';
 
 @Injectable()
 export class OrganizationService {

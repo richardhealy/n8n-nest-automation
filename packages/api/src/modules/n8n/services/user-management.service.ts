@@ -1,14 +1,14 @@
+import { randomBytes } from 'node:crypto';
 import {
+	ConflictException,
 	Injectable,
 	NotFoundException,
 	UnauthorizedException,
-	ConflictException,
 } from '@nestjs/common';
-import type { PrismaService } from '../../prisma/prisma.service';
 import type { User } from '@prisma/client';
+import type { PrismaService } from '../../prisma/prisma.service';
 import type { InviteUserDto } from '../dto/invite-user.dto';
 import type { UpdateUserRoleDto } from '../dto/update-user-role.dto';
-import { randomBytes } from 'node:crypto';
 
 @Injectable()
 export class UserManagementService {

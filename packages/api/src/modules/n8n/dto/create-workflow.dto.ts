@@ -1,13 +1,13 @@
+import { Type } from 'class-transformer';
 import {
-	IsString,
-	IsOptional,
 	IsArray,
-	IsObject,
-	ValidateNested,
 	IsBoolean,
 	IsNumber,
+	IsObject,
+	IsOptional,
+	IsString,
+	ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 class WorkflowNode {
 	@IsString()
@@ -20,7 +20,7 @@ class WorkflowNode {
 	type = '';
 
 	@IsObject()
-	parameters: Record<string, any> = {};
+	parameters: Record<string, unknown> = {};
 
 	@IsObject()
 	position: {

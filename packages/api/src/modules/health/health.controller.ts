@@ -1,9 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
 import {
+	type DiskHealthIndicator,
 	HealthCheck,
 	type HealthCheckService,
 	type HttpHealthIndicator,
-	type DiskHealthIndicator,
 	type MemoryHealthIndicator,
 } from '@nestjs/terminus';
 import type { PrismaService } from '../prisma/prisma.service';

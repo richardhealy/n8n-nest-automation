@@ -1,10 +1,4 @@
-import {
-	IsString,
-	IsArray,
-	IsObject,
-	IsOptional,
-	IsNotEmpty,
-} from 'class-validator';
+import { IsArray, IsNotEmpty, IsObject, IsString } from 'class-validator';
 import type { WorkflowConfig } from '../types/workflow.types';
 
 export class CreateTemplateDto {

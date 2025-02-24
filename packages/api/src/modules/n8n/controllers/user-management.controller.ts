@@ -1,22 +1,22 @@
 import {
-	Controller,
-	Get,
-	Post,
 	Body,
-	Param,
+	Controller,
 	Delete,
+	Get,
+	Param,
 	Patch,
+	Post,
 	UseGuards,
 } from '@nestjs/common';
-import type { UserManagementService } from '../services/user-management.service';
+import type { User } from '@prisma/client';
+import { GetUser } from '../../auth/decorators/get-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { GetUser } from '../../auth/decorators/get-user.decorator';
-import type { User } from '@prisma/client';
 import { UserRole } from '../../auth/types/user-role.enum';
 import type { InviteUserDto } from '../dto/invite-user.dto';
 import type { UpdateUserRoleDto } from '../dto/update-user-role.dto';
+import type { UserManagementService } from '../services/user-management.service';
 
 @Controller('organizations/:organizationId/users')
 @UseGuards(JwtAuthGuard, RolesGuard)

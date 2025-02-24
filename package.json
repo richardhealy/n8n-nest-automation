@@ -5,10 +5,12 @@
 		"dev": "pnpm -r --parallel dev",
 		"build": "pnpm -r build",
 		"test": "pnpm -r test",
-		"format": "pnpm dlx @biomejs/biome format --write .",
+		"format": "pnpm dlx @biomejs/biome format --write packages/api/src packages/frontend/src",
+		"organize": "pnpm dlx @biomejs/biome check --write --unsafe packages/api/src packages/frontend/src",
 		"lint": "pnpm dlx @biomejs/biome lint --write packages/api/src packages/frontend/src",
-		"check": "pnpm -r check",
-		"typecheck": "pnpm -r typecheck"
+		"check": "pnpm dlx @biomejs/biome check packages/api/src packages/frontend/src",
+		"typecheck": "pnpm -r typecheck",
+		"verify": "pnpm typecheck && pnpm check"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.5.3",

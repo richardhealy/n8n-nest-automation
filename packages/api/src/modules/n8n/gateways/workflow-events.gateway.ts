@@ -1,14 +1,14 @@
+import { Logger, UseGuards } from '@nestjs/common';
 import {
-	WebSocketGateway,
-	WebSocketServer,
-	SubscribeMessage,
 	type OnGatewayConnection,
 	type OnGatewayDisconnect,
+	SubscribeMessage,
+	WebSocketGateway,
+	WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, type Socket } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
-import { WsJwtGuard } from '../../auth/guards/ws-jwt.guard';
 import type { User } from '@prisma/client';
+import { Server, type Socket } from 'socket.io';
+import { WsJwtGuard } from '../../auth/guards/ws-jwt.guard';
 
 interface WorkflowMetrics {
 	executionTime: number;
@@ -102,7 +102,7 @@ export class WorkflowEventsGateway
 		);
 	}
 
-	notifyWorkflowExecution(workflowId: string, data: any) {
+	notifyWorkflowExecution(workflowId: string, data: Record<string, unknown>) {
 		this.server.to(`workflow:${workflowId}`).emit('execution-update', data);
 	}
 
@@ -112,7 +112,7 @@ export class WorkflowEventsGateway
 			.emit('status-update', { active: status });
 	}
 
-	notifyUser(userId: string, event: string, data: any) {
+	notifyUser(userId: string, event: string, data: Record<string, unknown>) {
 		const userSockets = this.userSockets.get(userId);
 		if (userSockets) {
 			for (const socketId of userSockets) {
@@ -163,7 +163,7 @@ export class WorkflowEventsGateway
 		update: {
 			userId: string;
 			action: 'joined' | 'left' | 'viewing' | 'editing';
-			metadata?: Record<string, any>;
+			metadata?: Record<string, unknown>;
 		},
 	) {
 		this.server.to(`workflow:${workflowId}`).emit('collaboration-update', {

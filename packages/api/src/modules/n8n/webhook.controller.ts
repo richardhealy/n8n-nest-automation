@@ -1,13 +1,13 @@
 import {
-	Controller,
-	Post,
 	Body,
+	Controller,
 	Headers,
+	Post,
 	UnauthorizedException,
 } from '@nestjs/common';
-import type { WebhookService } from './webhook.service';
-import type { WebhookDto } from './dto/webhook.dto';
 import type { ConfigService } from '@nestjs/config';
+import type { WebhookDto } from './dto/webhook.dto';
+import type { WebhookService } from './webhook.service';
 
 @Controller('webhooks/n8n')
 export class WebhookController {
@@ -29,7 +29,10 @@ export class WebhookController {
 		return this.webhookService.handleWebhook(webhookDto);
 	}
 
-	private verifyWebhookSignature(signature: string, payload: any): boolean {
+	private verifyWebhookSignature(
+		signature: string,
+		payload: WebhookDto,
+	): boolean {
 		// Implement signature verification logic
 		const webhookSecret = this.config.get<string>('N8N_WEBHOOK_SECRET');
 		// Add your signature verification logic here

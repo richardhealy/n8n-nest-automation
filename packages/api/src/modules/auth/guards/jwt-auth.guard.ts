@@ -1,5 +1,6 @@
-import { Injectable, type ExecutionContext } from '@nestjs/common';
+import { type ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import type { User } from '@prisma/client';
 import { Observable, from } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -33,7 +34,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 		return result;
 	}
 
-	handleRequest(err: any, user: any) {
+	handleRequest<TUser = User>(err: Error | null, user: TUser | false): TUser {
 		console.log('JwtAuthGuard handleRequest user:', user);
 		if (err || !user) {
 			throw err;

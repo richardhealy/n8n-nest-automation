@@ -1,4 +1,4 @@
-import { IsString, IsObject, IsOptional, IsEnum } from 'class-validator';
+import { IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 import { WebhookMethod } from './create-webhook.dto';
 
 export class UpdateWebhookDto {

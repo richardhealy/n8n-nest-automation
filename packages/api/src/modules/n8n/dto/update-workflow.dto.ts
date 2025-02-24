@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsObject } from 'class-validator';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export class UpdateWorkflowDto {
 	@IsString()
@@ -11,5 +11,5 @@ export class UpdateWorkflowDto {
 
 	@IsObject()
 	@IsOptional()
-	config?: Record<string, any>;
+	config?: Record<string, unknown>;
 }

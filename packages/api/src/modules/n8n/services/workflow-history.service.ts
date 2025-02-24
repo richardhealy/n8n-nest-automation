@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type {
 	WorkflowExecutionHistory,
@@ -16,7 +17,7 @@ export class WorkflowHistoryService {
 			data: {
 				...data,
 				status: data.status.toString(),
-				executionData: data.executionData as any,
+				executionData: data.executionData as unknown as Prisma.InputJsonValue,
 			},
 		}) as unknown as WorkflowExecutionHistory;
 	}

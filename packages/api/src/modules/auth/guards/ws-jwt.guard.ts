@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
+import type { User } from '@prisma/client';
 import type { Socket } from 'socket.io';
 import type { PrismaService } from '../../prisma/prisma.service';
-import type { User } from '@prisma/client';
 
 interface AuthenticatedSocket extends Socket {
 	user: User;

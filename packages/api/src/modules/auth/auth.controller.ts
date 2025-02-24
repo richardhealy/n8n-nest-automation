@@ -1,18 +1,18 @@
 import {
-	Controller,
-	Post,
 	Body,
+	Controller,
+	Get,
 	HttpCode,
 	HttpStatus,
+	Post,
 	UseGuards,
-	Get,
 } from '@nestjs/common';
-import type { AuthService } from './auth.service';
-import type { RegisterDto } from './dto/register.dto';
-import type { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { GetUser } from './decorators/get-user.decorator';
 import type { User } from '../../types/prisma';
+import type { AuthService } from './auth.service';
+import { GetUser } from './decorators/get-user.decorator';
+import type { LoginDto } from './dto/login.dto';
+import type { RegisterDto } from './dto/register.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 interface AuthResponse {
 	user: Omit<User, 'password'>;

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import type { N8nService } from '../n8n/n8n.service';
 import axios from 'axios';
+import type { N8nService } from '../n8n/n8n.service';
 
 interface WebhookResult {
 	success: boolean;

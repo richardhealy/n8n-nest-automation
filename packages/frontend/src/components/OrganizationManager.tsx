@@ -68,7 +68,7 @@ const OrganizationManager = ({ token }: { token: string }) => {
 					? {
 							...prev,
 							users: [...prev.users, data],
-					  }
+						}
 					: null,
 			);
 			setNewUser({ email: '', role: 'USER' });
@@ -96,7 +96,7 @@ const OrganizationManager = ({ token }: { token: string }) => {
 					? {
 							...prev,
 							users: prev.users.filter((u) => u.id !== userId),
-					  }
+						}
 					: null,
 			);
 		} catch (err) {

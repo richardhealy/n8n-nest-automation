@@ -1,21 +1,21 @@
 import {
+	Body,
 	Controller,
 	Get,
-	Post,
-	Body,
-	Patch,
 	Param,
+	Patch,
+	Post,
 	UseGuards,
 } from '@nestjs/common';
-import type { OrganizationService } from '../services/organization.service';
+import type { User } from '@prisma/client';
+import { GetUser } from '../../auth/decorators/get-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { GetUser } from '../../auth/decorators/get-user.decorator';
-import type { User } from '@prisma/client';
 import { UserRole } from '../../auth/types/user-role.enum';
 import type { CreateOrganizationDto } from '../dto/create-organization.dto';
 import type { UpdateOrganizationDto } from '../dto/update-organization.dto';
+import type { OrganizationService } from '../services/organization.service';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)

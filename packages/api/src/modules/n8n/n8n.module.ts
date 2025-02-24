@@ -1,21 +1,21 @@
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthModule } from '../auth/auth.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { OrganizationController } from './controllers/organization.controller';
+import { UserManagementController } from './controllers/user-management.controller';
+import { WebhookController } from './controllers/webhook.controller';
+import { WorkflowController } from './controllers/workflow.controller';
+import { WorkflowEventsGateway } from './gateways/workflow-events.gateway';
 import { N8nController } from './n8n.controller';
 import { N8nService } from './n8n.service';
-import { TemplatePresetService } from './services/template-preset.service';
 import { OrganizationService } from './services/organization.service';
-import { OrganizationController } from './controllers/organization.controller';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PrismaModule } from '../prisma/prisma.module';
+import { TemplatePresetService } from './services/template-preset.service';
 import { UserManagementService } from './services/user-management.service';
-import { UserManagementController } from './controllers/user-management.controller';
-import { BullModule } from '@nestjs/bull';
 import { WebhookQueueService } from './services/webhook-queue.service';
-import { WebhookController } from './controllers/webhook.controller';
-import { WorkflowEventsGateway } from './gateways/workflow-events.gateway';
 import { WorkflowHistoryService } from './services/workflow-history.service';
 import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
-import { AuthModule } from '../auth/auth.module';
-import { WorkflowController } from './controllers/workflow.controller';
 import { WorkflowService } from './services/workflow.service';
 
 @Module({

@@ -1,9 +1,9 @@
 import { Injectable, type OnModuleInit } from '@nestjs/common';
 import * as cron from 'node-cron';
-import type { WorkflowHistoryService } from './workflow-history.service';
+import type { PrismaService } from '../../prisma/prisma.service';
 import type { N8nService } from '../n8n.service';
 import type { WorkflowSchedule } from '../types/workflow-history.types';
-import type { PrismaService } from '../../prisma/prisma.service';
+import type { WorkflowHistoryService } from './workflow-history.service';
 
 @Injectable()
 export class WorkflowSchedulerService implements OnModuleInit {

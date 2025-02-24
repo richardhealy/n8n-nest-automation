@@ -1,19 +1,19 @@
 import {
+	Body,
 	Controller,
 	Get,
-	Post,
-	Body,
 	Param,
 	Patch,
+	Post,
 	UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import type { WorkflowHistoryService } from '../services/workflow-history.service';
 import type {
 	WorkflowExecutionHistory,
 	WorkflowSchedule,
 } from '../types/workflow-history.types';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @ApiTags('workflow-history')
 @Controller('workflow-history')

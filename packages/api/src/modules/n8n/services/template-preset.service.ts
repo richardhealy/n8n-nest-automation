@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import type { PrismaService } from '../../prisma/prisma.service';
-import { whatsappTemplate } from '../templates/whatsapp.template';
-import { openaiTemplate } from '../templates/openai.template';
-import { googleCalendarTemplate } from '../templates/google-calendar.template';
-import { emailAutomationTemplate } from '../templates/email-automation.template';
 import type { User } from '@prisma/client';
+import type { PrismaService } from '../../prisma/prisma.service';
+import { emailAutomationTemplate } from '../templates/email-automation.template';
+import { googleCalendarTemplate } from '../templates/google-calendar.template';
+import { openaiTemplate } from '../templates/openai.template';
+import { whatsappTemplate } from '../templates/whatsapp.template';
 
 @Injectable()
 export class TemplatePresetService {

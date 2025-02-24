@@ -1,13 +1,16 @@
 export interface WorkflowConfig {
-	nodes: Record<string, any>[];
+	nodes: Record<string, unknown>[];
 	connections: Record<string, Connection>;
-	[key: string]: any;
+	[key: string]:
+		| Record<string, unknown>
+		| Record<string, unknown>[]
+		| Connection;
 }
 
 export interface Node {
 	id: string;
 	type: string;
-	parameters: Record<string, any>;
+	parameters: Record<string, unknown>;
 	position: [number, number];
 }
 
@@ -19,7 +22,7 @@ export interface Organization {
 	id: string;
 	name: string;
 	apiKey: string;
-	whiteLabel: Record<string, any>;
+	whiteLabel: Record<string, unknown>;
 }
 
 export interface Template {
@@ -37,8 +40,7 @@ export interface Template {
 export interface WorkflowData {
 	id?: string;
 	name: string;
-	nodes: any[];
-	connections: any;
-	settings?: any;
-	// Add other workflow-specific fields as needed
+	nodes: Record<string, unknown>[];
+	connections: Record<string, unknown>;
+	settings?: Record<string, unknown>;
 }

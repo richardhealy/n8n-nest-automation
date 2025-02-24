@@ -1,4 +1,4 @@
-import { IsString, IsObject, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsObject, IsString } from 'class-validator';
 
 export class WebhookPayloadDto {
 	@IsString()
@@ -11,5 +11,5 @@ export class WebhookPayloadDto {
 
 	@IsObject()
 	@IsNotEmpty()
-	data: Record<string, any> = {};
+	data: Record<string, unknown> = {};
 }

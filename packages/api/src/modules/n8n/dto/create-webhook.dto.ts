@@ -1,4 +1,4 @@
-import { IsString, IsObject, IsOptional, IsEnum } from 'class-validator';
+import { IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 
 export enum WebhookMethod {
 	GET = 'GET',

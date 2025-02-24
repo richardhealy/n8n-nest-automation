@@ -1,16 +1,16 @@
 import {
-	Controller,
-	Post,
-	Get,
 	Body,
-	Param,
+	Controller,
+	Get,
 	Headers,
-	UnauthorizedException,
-	NotFoundException,
 	Logger,
+	NotFoundException,
+	Param,
+	Post,
+	UnauthorizedException,
 } from '@nestjs/common';
-import type { WebhookQueueService } from '../services/webhook-queue.service';
 import type { PrismaService } from '../../prisma/prisma.service';
+import type { WebhookQueueService } from '../services/webhook-queue.service';
 
 @Controller('webhooks')
 export class WebhookController {
@@ -25,7 +25,7 @@ export class WebhookController {
 	async handleWebhook(
 		@Param('token') token: string,
 		@Headers() headers: Record<string, string>,
-		@Body() payload: any,
+		@Body() payload: Record<string, unknown>,
 	) {
 		this.logger.debug(`Received webhook event for token: ${token}`);
 

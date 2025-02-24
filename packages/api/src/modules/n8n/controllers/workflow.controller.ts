@@ -1,20 +1,20 @@
 import {
-	Controller,
-	Get,
-	Post,
 	Body,
-	Param,
+	Controller,
 	Delete,
+	Get,
+	Param,
+	Post,
 	UseGuards,
 } from '@nestjs/common';
+import type { User } from '@prisma/client';
+import { GetUser } from '../../auth/decorators/get-user.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { GetUser } from '../../auth/decorators/get-user.decorator';
-import type { User } from '@prisma/client';
 import { UserRole } from '../../auth/types/user-role.enum';
-import type { WorkflowService } from '../services/workflow.service';
 import type { CreateWorkflowDto } from '../dto/create-workflow.dto';
+import type { WorkflowService } from '../services/workflow.service';
 
 @Controller('workflows')
 @UseGuards(JwtAuthGuard)

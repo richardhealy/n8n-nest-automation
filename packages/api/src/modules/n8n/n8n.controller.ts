@@ -1,31 +1,29 @@
 import {
-	Controller,
-	Post,
 	Body,
+	Controller,
+	Delete,
 	Get,
 	Param,
-	HttpCode,
-	HttpStatus,
-	UseGuards,
-	Query,
 	Patch,
-	Delete,
+	Post,
+	Query,
+	UseGuards,
 } from '@nestjs/common';
-import type { N8nService } from './n8n.service';
-import type { CreateTemplateDto } from './dto/create-template.dto';
+import type { User } from '@prisma/client';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../auth/types/user-role.enum';
-import { GetUser } from '../auth/decorators/get-user.decorator';
-import type { User } from '@prisma/client';
-import type { CreateWorkflowDto } from './dto/create-workflow.dto';
-import type { TemplatePresetService } from './services/template-preset.service';
-import type { ListWorkflowDto } from './dto/list-workflow.dto';
-import type { UpdateWorkflowDto } from './dto/update-workflow.dto';
-import type { ListTemplateDto } from './dto/list-template.dto';
+import type { CreateTemplateDto } from './dto/create-template.dto';
 import type { CreateWebhookDto } from './dto/create-webhook.dto';
+import type { CreateWorkflowDto } from './dto/create-workflow.dto';
+import type { ListTemplateDto } from './dto/list-template.dto';
+import type { ListWorkflowDto } from './dto/list-workflow.dto';
 import type { UpdateWebhookDto } from './dto/update-webhook.dto';
+import type { UpdateWorkflowDto } from './dto/update-workflow.dto';
+import type { N8nService } from './n8n.service';
+import type { TemplatePresetService } from './services/template-preset.service';
 
 @Controller('n8n')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -78,12 +76,16 @@ export class N8nController {
 	@Roles(UserRole.ADMIN)
 	createFromPreset(
 		@GetUser() user: User,
-		@Param('preset') preset: string,
+		@Param('preset') preset:
+			| 'whatsapp'
+			| 'openai'
+			| 'googleCalendar'
+			| 'emailAutomation',
 		@Body() data: { name: string; description: string },
 	) {
 		return this.templatePresetService.createFromPreset(
 			user,
-			preset as any,
+			preset,
 			data.name,
 			data.description,
 		);
