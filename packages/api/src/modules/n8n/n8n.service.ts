@@ -147,13 +147,28 @@ export class N8nService {
   async createWorkflow(user: User, createDto: CreateWorkflowDto) {
     const url = `${this.apiUrl}/workflows`;
 
+    // Prepare the payload according to N8N's requirements
+    const n8nWorkflowData = {
+      name: createDto.name,
+      nodes: createDto.nodes || [], // Provide empty array if not specified
+      connections: createDto.connections || {}, // Provide empty object if not specified
+      settings: {
+        saveExecutionProgress: true,
+        saveManualExecutions: true,
+        saveDataErrorExecution: 'all',
+        saveDataSuccessExecution: 'all',
+        executionTimeout: 3600,
+        timezone: 'UTC',
+      },
+    };
+
     this.logger.debug('Making N8N API request', { 
       url,
-      data: createDto
+      data: n8nWorkflowData
     });
 
     try {
-      const response = await axios.post(url, createDto, { headers: this.headers });
+      const response = await axios.post(url, n8nWorkflowData, { headers: this.headers });
       return response.data;
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -186,19 +201,24 @@ export class N8nService {
       where: { id: workflowId },
     });
 
+    if (!workflow) {
+      throw new NotFoundException('Workflow not found');
+    }
+
+    this.logger.log(JSON.stringify(workflow?.config));
+
     if (!(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
       throw new Error('N8N workflow ID not found');
     }
 
     try {
+
       // Activate workflow in N8N using the stored n8nWorkflowId
-      const response = await axios.post(
+      await axios.post(
         `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/activate`,
         {},
         { headers: this.headers }
       );
-
-      console.log('N8N response:', response.data);
 
       // Update workflow status in database
       const updatedWorkflow = await this.prisma.workflow.update({
@@ -219,6 +239,7 @@ export class N8nService {
   }
 
   async deactivateWorkflow(_user: User, workflowId: string) {
+    this.logger.log("Deactivating workflow", workflowId);
     const workflow = await this.prisma.workflow.findUnique({
       where: { id: workflowId },
     });

@@ -26,11 +26,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     this.logger = new Logger(JwtStrategy.name);
-    this.logger.debug(`Using JWT_SECRET: ${secret}`);
   }
 
   async validate(payload: JwtPayload) {
-    this.logger.debug(`JWT payload: ${JSON.stringify(payload)}`);
+
     return {
       id: payload.userId,
       email: payload.email,

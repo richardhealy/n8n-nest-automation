@@ -35,7 +35,6 @@ export class OrganizationController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   async getCurrentOrganization(@GetUser() user: User) {
-    console.log('Controller user:', user);
     return this.organizationService.getOrganization(user, user.organizationId);
   }
 

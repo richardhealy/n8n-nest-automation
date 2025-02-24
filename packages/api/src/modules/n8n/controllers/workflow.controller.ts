@@ -36,7 +36,6 @@ export class WorkflowController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   findAll(@GetUser() user: User) {
-    console.log('WorkflowController findAll user:', user);
     return this.workflowService.findAll(user);
   }
 

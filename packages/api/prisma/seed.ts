@@ -23,8 +23,6 @@ async function main() {
 			organizationId: organization.id,
 		},
 	});
-
-	console.log({ organization, admin });
 }
 
 main()

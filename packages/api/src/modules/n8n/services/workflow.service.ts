@@ -22,12 +22,7 @@ export class WorkflowService {
     user: User,
     createWorkflowDto: CreateWorkflowDto,
   ): Promise<Workflow> {
-    console.log('Creating workflow:', {
-      dto: createWorkflowDto,
-      userId: user.id,
-      organizationId: user.organizationId,
-    });
-
+    
     // Create workflow in N8N first
     const n8nWorkflow = await this.n8nService.createWorkflow(
       user,
@@ -51,7 +46,7 @@ export class WorkflowService {
   }
 
   async findAll(user: User) {
-    console.log('WorkflowService findAll user:', user);
+
     
     return this.prisma.workflow.findMany({
       where: {

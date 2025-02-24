@@ -21,7 +21,6 @@ const OrganizationManager = ({ token }: { token: string }) => {
 
   const fetchOrganization = useCallback(async () => {
     try {
-      console.log('Token:', token); // Debug token
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/organizations/current`,
         {
