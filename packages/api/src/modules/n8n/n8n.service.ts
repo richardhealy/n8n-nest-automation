@@ -249,7 +249,7 @@ export class N8nService {
 
     try {
       // Deactivate workflow in N8N using the stored n8nWorkflowId
-      const n8nResponse = await axios.post(
+      await axios.post(
         `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/deactivate`,
         {},
         {
@@ -259,45 +259,23 @@ export class N8nService {
         },
       );
 
-      // Verify N8N deactivation was successful
-      if (n8nResponse.status !== 200) {
-        throw new Error('Failed to deactivate workflow in N8N');
-      }
-
       // Update workflow status in database
       const updatedWorkflow = await this.prisma.workflow.update({
         where: { id: workflowId },
         data: { active: false },
       });
 
-      // Verify database update
-      if (updatedWorkflow.active === true) {
-        throw new Error('Failed to update workflow status in database');
-      }
-
       // Notify subscribers about workflow status update
       this.eventsGateway.notifyWorkflowStatus(workflowId, false);
-
-      // Double check N8N status
-      const checkResponse = await axios.get(
-        `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}`,
-        {
-          headers: {
-            'X-N8N-API-KEY': this.config.get('N8N_API_KEY'),
-          },
-        },
-      );
-
-      if (checkResponse.data.active === true) {
-        throw new Error('Workflow is still active in N8N after deactivation');
-      }
 
       return updatedWorkflow;
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to deactivate workflow: ${error.message}`);
       }
-      throw error;}
+      throw error;
+    }
+  }
 
   async validateWorkflowAccess(
     user: User,
@@ -388,13 +366,14 @@ export class N8nService {
     return execution;
   }
 
-  async getWorkflowExecutions(user: User, workflowId: string) 
+  async getWorkflowExecutions(user: User, workflowId: string) {
     await this.validateWorkflowAccess(user, workflowId);
 
     return this.prisma.workflowExecution.findMany({
       where: { workflowId },
       orderBy: { startedAt: 'desc' },
     });
+  }
 
   async getExecution(user: User, executionId: string) {
     const execution = await this.prisma.workflowExecution.findUnique({
@@ -446,7 +425,7 @@ export class N8nService {
     });
   }
 
-  async getWorkflow(_user: User, id: string) 
+  async getWorkflow(_user: User, id: string) {
     return this.prisma.workflow.findUnique({
       where: { id },
       include: {
@@ -456,8 +435,9 @@ export class N8nService {
         },
       },
     });
+  }
 
-  async updateWorkflow(user: User, id: string, updateDto: UpdateWorkflowDto) 
+  async updateWorkflow(user: User, id: string, updateDto: UpdateWorkflowDto) {
     await this.validateWorkflowAccess(user, id);
 
     return this.prisma.workflow.update({
@@ -467,6 +447,7 @@ export class N8nService {
         config: updateDto.config as unknown as Prisma.InputJsonValue,
       },
     });
+  }
 
   async deleteWorkflow(user: User, id: string) {
     await this.validateWorkflowAccess(user, id);
@@ -540,7 +521,7 @@ export class N8nService {
     user: User,
     templateId: string,
     updateDto: Partial<CreateTemplateDto>,
-  ) 
+  ) {
     await this.validateOrganizationAccess(user, templateId);
 
     return this.prisma.template.update({
@@ -558,6 +539,7 @@ export class N8nService {
         },
       },
     });
+  }
 
   async deleteTemplate(user: User, templateId: string) {
     await this.validateOrganizationAccess(user, templateId);
@@ -730,7 +712,7 @@ export class N8nService {
     return { success: true };
   }
 
-  async getWorkflowWebhooks(user: User, workflowId: string) 
+  async getWorkflowWebhooks(user: User, workflowId: string) {
     await this.validateWorkflowAccess(user, workflowId);
 
     return this.prisma.webhookEvent.findMany({
@@ -742,6 +724,7 @@ export class N8nService {
         workflow: true,
       },
     });
+  }
 
   async executeWorkflow(workflowId: string, data: Record<string, unknown>) {
     const workflow = await this.prisma.workflow.findUnique({
