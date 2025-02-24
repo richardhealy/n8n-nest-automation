@@ -11,20 +11,20 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { WebhookModule } from './modules/webhooks/webhook.module';
 
 @Module({
-	imports: [
-		ConfigModule.forRoot({
-			isGlobal: true,
-			load: [configuration],
-			validationSchema,
-			ignoreEnvFile: true,
-		}),
-		AuthModule,
-		PrismaModule,
-		N8nModule,
-		WebhookModule,
-		HealthModule,
-	],
-	controllers: [AppController],
-	providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      validationSchema,
+      ignoreEnvFile: true,
+    }),
+    AuthModule,
+    PrismaModule,
+    N8nModule,
+    WebhookModule,
+    HealthModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

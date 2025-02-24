@@ -19,42 +19,42 @@ import { WorkflowSchedulerService } from './services/workflow-scheduler.service'
 import { WorkflowService } from './services/workflow.service';
 
 @Module({
-	imports: [
-		ConfigModule,
-		PrismaModule,
-		AuthModule,
-		BullModule.forRootAsync({
-			imports: [ConfigModule],
-			useFactory: async (configService: ConfigService) => ({
-				redis: {
-					host: configService.get('REDIS_HOST'),
-					port: configService.get('REDIS_PORT'),
-				},
-			}),
-			inject: [ConfigService],
-		}),
-		BullModule.registerQueue({
-			name: 'webhook-events',
-		}),
-	],
-	controllers: [
-		N8nController,
-		OrganizationController,
-		UserManagementController,
-		WebhookController,
-		WorkflowController,
-	],
-	providers: [
-		N8nService,
-		TemplatePresetService,
-		OrganizationService,
-		UserManagementService,
-		WebhookQueueService,
-		WorkflowEventsGateway,
-		WorkflowHistoryService,
-		WorkflowSchedulerService,
-		WorkflowService,
-	],
-	exports: [N8nService, WorkflowHistoryService],
+  imports: [
+    ConfigModule,
+    PrismaModule,
+    AuthModule,
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        redis: {
+          host: configService.get('REDIS_HOST'),
+          port: configService.get('REDIS_PORT'),
+        },
+      }),
+      inject: [ConfigService],
+    }),
+    BullModule.registerQueue({
+      name: 'webhook-events',
+    }),
+  ],
+  controllers: [
+    N8nController,
+    OrganizationController,
+    UserManagementController,
+    WebhookController,
+    WorkflowController,
+  ],
+  providers: [
+    N8nService,
+    TemplatePresetService,
+    OrganizationService,
+    UserManagementService,
+    WebhookQueueService,
+    WorkflowEventsGateway,
+    WorkflowHistoryService,
+    WorkflowSchedulerService,
+    WorkflowService,
+  ],
+  exports: [N8nService, WorkflowHistoryService],
 })
 export class N8nModule {}

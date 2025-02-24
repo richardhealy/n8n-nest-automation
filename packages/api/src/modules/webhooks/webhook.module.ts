@@ -5,9 +5,9 @@ import { WebhookController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
 
 @Module({
-	imports: [N8nModule, ConfigModule],
-	controllers: [WebhookController],
-	providers: [WebhookService],
-	exports: [WebhookService],
+  imports: [N8nModule, ConfigModule],
+  controllers: [WebhookController],
+  providers: [WebhookService],
+  exports: [WebhookService],
 })
 export class WebhookModule {}
