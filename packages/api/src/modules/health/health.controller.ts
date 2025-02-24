@@ -1,21 +1,21 @@
 import { Controller, Get } from '@nestjs/common';
 import {
-  type DiskHealthIndicator,
+  DiskHealthIndicator,
   HealthCheck,
-  type HealthCheckService,
-  type HttpHealthIndicator,
-  type MemoryHealthIndicator,
+  HealthCheckService,
+  HttpHealthIndicator,
+  MemoryHealthIndicator,
 } from '@nestjs/terminus';
-import type { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('health')
 export class HealthController {
   constructor(
-    private health: HealthCheckService,
-    private http: HttpHealthIndicator,
-    private disk: DiskHealthIndicator,
-    private memory: MemoryHealthIndicator,
-    private prisma: PrismaService,
+    private readonly health: HealthCheckService,
+    private readonly http: HttpHealthIndicator,
+    private readonly disk: DiskHealthIndicator,
+    private readonly memory: MemoryHealthIndicator,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Get()

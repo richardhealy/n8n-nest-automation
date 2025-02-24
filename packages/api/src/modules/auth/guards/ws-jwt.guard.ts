@@ -3,11 +3,12 @@ import {
   type ExecutionContext,
   Injectable,
 } from '@nestjs/common';
-import type { JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
 import type { User } from '@prisma/client';
 import type { Socket } from 'socket.io';
-import type { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AuthService } from '../auth.service';
 
 interface AuthenticatedSocket extends Socket {
   user: User;
@@ -18,6 +19,7 @@ export class WsJwtGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { User } from '../../types/prisma';
-import type { AuthService } from './auth.service';
+import { AuthService } from './auth.service';
 import { GetUser } from './decorators/get-user.decorator';
 import type { LoginDto } from './dto/login.dto';
 import type { RegisterDto } from './dto/register.dto';

@@ -1,16 +1,15 @@
 import {
-  HttpException,
-  HttpStatus,
+
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import type { User, Workflow } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import axios from 'axios';
-import type { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import type { CreateTemplateDto } from './dto/create-template.dto';
 import type { CreateWebhookDto } from './dto/create-webhook.dto';
 import type { CreateWorkflowDto } from './dto/create-workflow.dto';
@@ -19,7 +18,7 @@ import type { ListWorkflowDto } from './dto/list-workflow.dto';
 import type { UpdateWebhookDto } from './dto/update-webhook.dto';
 import type { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import type { UpdateWorkflowExecutionDto } from './dto/workflow-execution.dto';
-import type { WorkflowEventsGateway } from './gateways/workflow-events.gateway';
+import { WorkflowEventsGateway } from './gateways/workflow-events.gateway';
 import { WorkflowExecutionStatus } from './types/workflow-execution.enum';
 import type { Template, WorkflowConfig } from './types/workflow.types';
 
@@ -39,24 +38,32 @@ interface WorkflowConfigWithN8N extends Record<string, unknown> {
 @Injectable()
 export class N8nService {
   private readonly logger = new Logger(N8nService.name);
-  private readonly apiUrl: string | undefined;
+  private readonly apiUrl: string;
+  private readonly apiKey: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly eventsGateway: WorkflowEventsGateway,
   ) {
-    // Get N8N API URL from environment variables
-    this.apiUrl = this.config.get<string>('N8N_API_URL');
+    const apiUrl = config.get<string>('N8N_API_URL');
+    const apiKey = config.get<string>('N8N_API_KEY');
 
-    console.log('Environment variables:', {
-      N8N_API_URL: this.config.get<string>('N8N_API_URL'),
-      N8N_API_KEY: this.config.get<string>('N8N_API_KEY'),
-    });
-
-    if (!this.apiUrl) {
-      throw new Error('N8N_API_URL environment variable is not set');
+    if (!apiUrl || !apiKey) {
+      throw new Error('N8N_API_URL and N8N_API_KEY must be configured');
     }
+
+    this.apiUrl = apiUrl;
+    this.apiKey = apiKey;
+
+    this.logger.log('N8N configuration loaded', { apiUrl });
+  }
+
+  private get headers() {
+    return {
+      'X-N8N-API-KEY': this.apiKey,
+      'Content-Type': 'application/json',
+    };
   }
 
   async createTemplate(
@@ -119,11 +126,7 @@ export class N8nService {
         connections: template.config.connections,
         active: false,
       },
-      {
-        headers: {
-          'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-        },
-      },
+      { headers: this.headers }
     );
 
     // Create workflow in our database with n8n ID
@@ -141,46 +144,27 @@ export class N8nService {
     });
   }
 
-  async createWorkflow(user: User, dto: CreateWorkflowDto) {
-    console.log(`API URL ${this.apiUrl}/workflows`);
+  async createWorkflow(user: User, createDto: CreateWorkflowDto) {
+    const url = `${this.apiUrl}/workflows`;
+
+    this.logger.debug('Making N8N API request', { 
+      url,
+      data: createDto
+    });
 
     try {
-      // Only include the properties that N8N expects, excluding 'active'
-      const workflowData = {
-        name: dto.name,
-        nodes: dto.nodes || [],
-        connections: dto.connections || {},
-        settings: {
-          saveExecutionProgress: true,
-          saveManualExecutions: true,
-          saveDataErrorExecution: 'all',
-          saveDataSuccessExecution: 'all',
-          executionTimeout: 3600,
-          timezone: 'UTC',
-          ...dto.settings,
-        },
-      };
-
-      const response = await axios.post(
-        `${this.apiUrl}/workflows`,
-        workflowData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-          },
-        },
-      );
+      const response = await axios.post(url, createDto, { headers: this.headers });
       return response.data;
-    } catch (error) {
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error('N8N API Error:', error.response?.data);
-        throw new HttpException(
-          error.response?.data?.message || 'Failed to create workflow in N8N',
-          error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        this.logger.error('N8N API Error Details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          requestHeaders: error.config?.headers,
+          url: error.config?.url
+        });
       }
-      throw error;
+      throw new UnauthorizedException('Failed to create workflow in N8N');
     }
   }
 
@@ -198,44 +182,40 @@ export class N8nService {
   }
 
   async activateWorkflow(_user: User, workflowId: string) {
-	const workflow = await this.prisma.workflow.findUnique({
-	where: { id: workflowId },
-	});
+    const workflow = await this.prisma.workflow.findUnique({
+      where: { id: workflowId },
+    });
 
-	if (!(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
-	throw new Error('N8N workflow ID not found');
-	}
+    if (!(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId) {
+      throw new Error('N8N workflow ID not found');
+    }
 
-	try {
-	// Activate workflow in N8N using the stored n8nWorkflowId
-	const response = await axios.post(
-		`${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/activate`,
-		{},
-		{
-		headers: {
-			'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-		},
-		},
-	);
+    try {
+      // Activate workflow in N8N using the stored n8nWorkflowId
+      const response = await axios.post(
+        `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/activate`,
+        {},
+        { headers: this.headers }
+      );
 
-	console.log('N8N response:', response.data);
+      console.log('N8N response:', response.data);
 
-	// Update workflow status in database
-	const updatedWorkflow = await this.prisma.workflow.update({
-		where: { id: workflowId },
-		data: { active: true },
-	});
+      // Update workflow status in database
+      const updatedWorkflow = await this.prisma.workflow.update({
+        where: { id: workflowId },
+        data: { active: true },
+      });
 
-	// Notify subscribers about workflow status update
-	this.eventsGateway.notifyWorkflowStatus(workflowId, true);
+      // Notify subscribers about workflow status update
+      this.eventsGateway.notifyWorkflowStatus(workflowId, true);
 
-	return updatedWorkflow;
-	} catch (error) {
-	if (error instanceof Error) {
-		throw new Error(`Failed to activate workflow: ${error.message}`);
-	}
-	throw error;
-	}
+      return updatedWorkflow;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to activate workflow: ${error.message}`);
+      }
+      throw error;
+    }
   }
 
   async deactivateWorkflow(_user: User, workflowId: string) {
@@ -252,11 +232,7 @@ export class N8nService {
       await axios.post(
         `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/deactivate`,
         {},
-        {
-          headers: {
-            'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-          },
-        },
+        { headers: this.headers }
       );
 
       // Update workflow status in database
@@ -315,11 +291,7 @@ export class N8nService {
       await axios.post(
         `${this.apiUrl}/workflows/${(workflow.config as WorkflowConfigWithN8N).n8nWorkflowId}/execute`,
         {},
-        {
-          headers: {
-            'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-          },
-        },
+        { headers: this.headers }
       );
 
       return execution;
@@ -462,11 +434,7 @@ export class N8nService {
         await axios.post(
           `${this.apiUrl}/workflows/${id}/deactivate`,
           {},
-          {
-            headers: {
-              'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-            },
-          },
+          { headers: this.headers }
         );
       } catch (error) {
         if (error instanceof Error) {
@@ -606,11 +574,7 @@ export class N8nService {
         path: createWebhookDto.path,
         headers: createWebhookDto.headers,
       },
-      {
-        headers: {
-          'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-        },
-      },
+      { headers: this.headers }
     );
 
     // Store webhook in database
@@ -657,11 +621,7 @@ export class N8nService {
     await axios.patch(
       `${this.apiUrl}/webhooks/${payload.n8nWebhookId}`,
       updateDto,
-      {
-        headers: {
-          'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-        },
-      },
+      { headers: this.headers }
     );
 
     // Update webhook in database
@@ -699,9 +659,7 @@ export class N8nService {
 
     // Delete webhook from N8N
     await axios.delete(`${this.apiUrl}/webhooks/${payload.n8nWebhookId}`, {
-      headers: {
-        'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-      },
+      headers: this.headers
     });
 
     // Delete webhook from database
@@ -745,11 +703,7 @@ export class N8nService {
       {
         data,
       },
-      {
-        headers: {
-          'X-N8N-API-KEY': this.config.get<string>('N8N_API_KEY'),
-        },
-      },
+      { headers: this.headers }
     );
   }
 }

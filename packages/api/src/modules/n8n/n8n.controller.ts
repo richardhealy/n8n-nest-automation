@@ -22,8 +22,9 @@ import type { ListTemplateDto } from './dto/list-template.dto';
 import type { ListWorkflowDto } from './dto/list-workflow.dto';
 import type { UpdateWebhookDto } from './dto/update-webhook.dto';
 import type { UpdateWorkflowDto } from './dto/update-workflow.dto';
-import type { N8nService } from './n8n.service';
-import type { TemplatePresetService } from './services/template-preset.service';
+import { N8nService } from './n8n.service';
+import { TemplatePresetService } from './services/template-preset.service';
+import { WorkflowService } from './services/workflow.service';
 
 @Controller('n8n')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -31,6 +32,7 @@ export class N8nController {
   constructor(
     private readonly n8nService: N8nService,
     private readonly templatePresetService: TemplatePresetService,
+    private readonly workflowService: WorkflowService,
   ) {}
 
   @Post('templates')

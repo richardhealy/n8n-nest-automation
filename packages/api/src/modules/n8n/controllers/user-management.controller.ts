@@ -16,9 +16,9 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { UserRole } from '../../auth/types/user-role.enum';
 import type { InviteUserDto } from '../dto/invite-user.dto';
 import type { UpdateUserRoleDto } from '../dto/update-user-role.dto';
-import type { UserManagementService } from '../services/user-management.service';
+import { UserManagementService } from '../services/user-management.service';
 
-@Controller('organizations/:organizationId/users')
+@Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserManagementController {
   constructor(private readonly userManagementService: UserManagementService) {}

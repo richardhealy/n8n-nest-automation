@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import type { User } from '@prisma/client';
-import type { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { emailAutomationTemplate } from '../templates/email-automation.template';
 import { googleCalendarTemplate } from '../templates/google-calendar.template';
 import { openaiTemplate } from '../templates/openai.template';
 import { whatsappTemplate } from '../templates/whatsapp.template';
+import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TemplatePresetService {
@@ -32,7 +33,7 @@ export class TemplatePresetService {
       data: {
         name,
         description,
-        config: preset,
+        config: preset as unknown as Prisma.InputJsonValue,
         tags: [presetName],
         userId: user.id,
         organizationId: user.organizationId,

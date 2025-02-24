@@ -9,6 +9,7 @@
 		"organize": "pnpm dlx @biomejs/biome check --write --unsafe packages/api/src packages/frontend/src",
 		"lint": "pnpm dlx @biomejs/biome lint --write packages/api/src packages/frontend/src",
 		"check": "pnpm dlx @biomejs/biome check packages/api/src packages/frontend/src",
+		"typecheck": "pnpm -r typecheck",
 		"verify": "pnpm typecheck && pnpm check"
 	},
 	"devDependencies": {

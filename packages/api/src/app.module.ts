@@ -8,7 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { N8nModule } from './modules/n8n/n8n.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
-import { WebhookModule } from './modules/webhooks/webhook.module';
+import { WebhookModule } from './modules/n8n/webhook.module';
 
 @Module({
   imports: [
