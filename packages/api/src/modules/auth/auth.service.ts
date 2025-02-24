@@ -3,22 +3,29 @@ import {
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
-import type { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import type { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import type { LoginDto } from './dto/login.dto';
 import type { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    // Log the first few characters of the secret to verify it's loaded correctly
+    const secret = this.config.get<string>('JWT_SECRET');
+    this.logger.debug(`JWT_SECRET loaded (first 4 chars): ${secret?.substring(0, 4)}`);
+  }
 
   async register(registerDto: RegisterDto) {
     const { email, password, organizationId } = registerDto;
@@ -77,9 +84,10 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
-    // Find user
+    // Find user with organization
     const user = await this.prisma.user.findUnique({
       where: { email },
+      include: { organization: true }, // Include organization data
     });
 
     if (!user) {
@@ -93,12 +101,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Generate token with userId
+    // Generate token with organizationId
     const token = this.jwtService.sign({
       userId: user.id,
-      // Add these fields to ensure they're in the JWT
       role: user.role,
       email: user.email,
+      organizationId: user.organizationId, // Add this
     });
 
     return {

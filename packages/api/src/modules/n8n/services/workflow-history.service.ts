@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 import type { Prisma } from '@prisma/client';
-import type { PrismaService } from '../../prisma/prisma.service';
 import type {
   WorkflowExecutionHistory,
   WorkflowSchedule,
@@ -8,7 +8,7 @@ import type {
 
 @Injectable()
 export class WorkflowHistoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async createExecutionHistory(
     data: Omit<WorkflowExecutionHistory, 'id' | 'createdAt'>,

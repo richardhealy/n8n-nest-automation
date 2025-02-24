@@ -3,12 +3,11 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { User } from '@prisma/client';
-import type { Workflow } from '@prisma/client';
+import type { User, Workflow } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
-import type { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import type { CreateWorkflowDto } from '../dto/create-workflow.dto';
-import type { N8nService } from '../n8n.service';
+import { N8nService } from '../n8n.service';
 
 type PrismaJson = Prisma.InputJsonValue;
 
@@ -52,6 +51,8 @@ export class WorkflowService {
   }
 
   async findAll(user: User) {
+    console.log('WorkflowService findAll user:', user);
+    
     return this.prisma.workflow.findMany({
       where: {
         userId: user.id,

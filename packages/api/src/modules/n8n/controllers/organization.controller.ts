@@ -15,7 +15,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { UserRole } from '../../auth/types/user-role.enum';
 import type { CreateOrganizationDto } from '../dto/create-organization.dto';
 import type { UpdateOrganizationDto } from '../dto/update-organization.dto';
-import type { OrganizationService } from '../services/organization.service';
+import { OrganizationService } from '../services/organization.service';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard)

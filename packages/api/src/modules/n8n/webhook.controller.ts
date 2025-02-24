@@ -5,11 +5,11 @@ import {
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import type { WebhookDto } from './dto/webhook.dto';
-import type { WebhookService } from './webhook.service';
+import { WebhookService } from './webhook.service';
 
-@Controller('webhooks/n8n')
+@Controller('webhooks')
 export class WebhookController {
   constructor(
     private readonly webhookService: WebhookService,

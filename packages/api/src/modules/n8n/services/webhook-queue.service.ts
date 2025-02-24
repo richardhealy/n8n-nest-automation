@@ -1,15 +1,13 @@
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
-import type {
-  Workflow,
-  workflowExecution as WorkflowExecution,
-} from '@prisma/client';
+import type { Workflow, workflowExecution as WorkflowExecution } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import type { Job, Queue } from 'bull';
-import type { PrismaService } from '../../prisma/prisma.service';
-import type { WorkflowEventsGateway } from '../gateways/workflow-events.gateway';
-import type { N8nService } from '../n8n.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { WorkflowEventsGateway } from '../gateways/workflow-events.gateway';
+import { N8nService } from '../n8n.service';
 import { WorkflowExecutionStatus } from '../types/workflow-execution.enum';
+import { WorkflowService } from './workflow.service';
 
 interface WebhookPayload {
   workflowId: string;
@@ -27,9 +25,10 @@ export class WebhookQueueService {
   private readonly logger = new Logger(WebhookQueueService.name);
 
   constructor(
-    @InjectQueue('webhook-events') private webhookQueue: Queue,
-    private readonly n8nService: N8nService,
+    @InjectQueue('webhook-events') private readonly webhookQueue: Queue,
     private readonly prisma: PrismaService,
+    private readonly n8nService: N8nService,
+    private readonly workflowService: WorkflowService,
     private readonly eventsGateway: WorkflowEventsGateway,
   ) {}
 

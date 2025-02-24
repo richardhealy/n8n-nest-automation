@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma, type User } from '@prisma/client';
-import type { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import type { CreateOrganizationDto } from '../dto/create-organization.dto';
 import type { UpdateOrganizationDto } from '../dto/update-organization.dto';
 

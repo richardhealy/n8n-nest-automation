@@ -17,6 +17,7 @@ import { WebhookQueueService } from './services/webhook-queue.service';
 import { WorkflowHistoryService } from './services/workflow-history.service';
 import { WorkflowSchedulerService } from './services/workflow-scheduler.service';
 import { WorkflowService } from './services/workflow.service';
+import { WebhookModule } from './webhook.module';
 
 @Module({
   imports: [
@@ -36,12 +37,12 @@ import { WorkflowService } from './services/workflow.service';
     BullModule.registerQueue({
       name: 'webhook-events',
     }),
+    WebhookModule,
   ],
   controllers: [
     N8nController,
     OrganizationController,
     UserManagementController,
-    WebhookController,
     WorkflowController,
   ],
   providers: [

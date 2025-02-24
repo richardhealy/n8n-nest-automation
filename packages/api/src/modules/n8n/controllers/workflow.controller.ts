@@ -14,12 +14,16 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { UserRole } from '../../auth/types/user-role.enum';
 import type { CreateWorkflowDto } from '../dto/create-workflow.dto';
-import type { WorkflowService } from '../services/workflow.service';
+import { WorkflowService } from '../services/workflow.service';
+import { N8nService } from '../n8n.service';
 
 @Controller('workflows')
 @UseGuards(JwtAuthGuard)
 export class WorkflowController {
-  constructor(private readonly workflowService: WorkflowService) {}
+  constructor(
+    private readonly workflowService: WorkflowService,
+    private readonly n8nService: N8nService,
+  ) {}
 
   @Post()
   @UseGuards(RolesGuard)
@@ -32,6 +36,7 @@ export class WorkflowController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USER)
   findAll(@GetUser() user: User) {
+    console.log('WorkflowController findAll user:', user);
     return this.workflowService.findAll(user);
   }
 

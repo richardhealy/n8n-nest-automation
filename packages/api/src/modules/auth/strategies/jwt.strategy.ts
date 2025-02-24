@@ -1,44 +1,41 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import type { PrismaService } from '../../prisma/prisma.service';
+
+interface JwtPayload {
+  userId: string;
+  email: string;
+  role: string;
+  organizationId?: string;
+  iat: number;
+  exp: number;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly prisma: PrismaService,
-  ) {
-    const secret = configService.get<string>('JWT_SECRET');
-    if (!secret) {
-      throw new Error('JWT_SECRET is not defined');
-    }
+  private readonly logger: Logger;
 
+  constructor(configService: ConfigService) {
+    const secret = configService.get<string>('JWT_SECRET');
+    
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: secret,
     });
+
+    this.logger = new Logger(JwtStrategy.name);
+    this.logger.debug(`Using JWT_SECRET: ${secret}`);
   }
 
-  async validate(payload: { userId: string; role: string; email: string }) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.userId },
-      include: { organization: true },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    console.log('JWT Payload:', payload);
-    console.log('Database User:', user);
-
-    // Return user with role from database
+  async validate(payload: JwtPayload) {
+    this.logger.debug(`JWT payload: ${JSON.stringify(payload)}`);
     return {
-      ...user,
-      role: user.role, // Use the role from database instead of payload
+      id: payload.userId,
+      email: payload.email,
+      role: payload.role,
+      organizationId: payload.organizationId,
     };
   }
 }

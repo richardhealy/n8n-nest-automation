@@ -1,23 +1,27 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
 import type { WebhookDto } from './dto/webhook.dto';
+import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+  ) {}
 
   async handleWebhook(webhookDto: WebhookDto) {
     this.logger.log(
       `Processing webhook for workflow: ${webhookDto.workflowId}`,
     );
 
-    // Record webhook event
     await this.prisma.webhookEvent.create({
       data: {
         workflowId: webhookDto.workflowId,
-        payload: webhookDto.payload,
+        payload: webhookDto.payload as unknown as Prisma.InputJsonValue,
         event: webhookDto.event,
       },
     });

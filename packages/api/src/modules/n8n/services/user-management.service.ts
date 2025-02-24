@@ -5,8 +5,8 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 import type { User } from '@prisma/client';
-import type { PrismaService } from '../../prisma/prisma.service';
 import type { InviteUserDto } from '../dto/invite-user.dto';
 import type { UpdateUserRoleDto } from '../dto/update-user-role.dto';
 
