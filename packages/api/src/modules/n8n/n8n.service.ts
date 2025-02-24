@@ -239,35 +239,13 @@ export class N8nService {
   }
 
   async deactivateWorkflow(_user: User, workflowId: string) {
-    // Deactivate workflow in N8N using the stored n8nWorkflowId
-    const n8nResponse = await axios.post(
-      `${this.apiUrl}/workflows/${(workflow?.config as WorkflowConfigWithN8N)?.n8nWorkflowId}/deactivate`,
-      {},
-      {
-        headers: {
-          'X-N8N-API-KEY': this.config.get('N8N_API_KEY'),
-        },
-      },
-    );
-
-    if (!n8nResponse.data.active) {
+    if (n8nResponse.data.active) {
       throw new Error('Failed to deactivate workflow in N8N');
     }
 
-    // Update workflow status in database
-    const updatedWorkflow = await this.prisma.workflow.update({
-      where: { id: workflowId },
-      data: { active: false },
-    });
-
-    if (!updatedWorkflow.active) {
+    if (updatedWorkflow.active) {
       throw new Error('Failed to deactivate workflow in the database');
     }
-
-    // Notify subscribers about workflow status update
-    this.eventsGateway.notifyWorkflowStatus(workflowId, false);
-
-    return updatedWorkflow;
   }
 
   async validateWorkflowAccess(
